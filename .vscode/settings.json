@@ -1,0 +1,9 @@
+{
+  "java.project.sourcePaths": [
+    "src",
+    "lesson2/main/src/main/java/com/jakubpiskorz/learnjava/main"
+  ],
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.configuration.updateBuildConfiguration": "interactive",
+  "java.debug.settings.onBuildFailureProceed": true
+}
