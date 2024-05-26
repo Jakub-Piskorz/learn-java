@@ -1,24 +1,23 @@
 package com.jakubpiskorz.learnjava;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import com.jakubpiskorz.learnjava.logger.LoggerProcessor;
+import com.jakubpiskorz.learnjava.logger.Logger;
+import com.jakubpiskorz.learnjava.logger.NewLineLoggerService;
+import com.jakubpiskorz.learnjava.logger.SimpleLoggerService;
 
 @SpringBootApplication
 public class MainApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(MainApplication.class, args);
-    FileManager something = new FileManager();
+    Logger simpleLogger = new LoggerProcessor(new SimpleLoggerService());
+    simpleLogger.loudLog("Loud simple log.");
+    simpleLogger.quietLog("Quiet simple log.");
 
-    System.out.println("Path before");
-    System.out.println(something.paths.size());
-    something.addPath("C:/Program Files");
-    System.out.println("First path:");
-    System.out.println(something.paths.size());
-    System.out.println("Get path:");
-    System.out.println(something.paths.get(0));
-    System.out.println("Finished.");
-
+    Logger newLineLogger = new LoggerProcessor(new NewLineLoggerService());
+    newLineLogger.loudLog("Loud simple log.");
+    newLineLogger.quietLog("Quiet simple log.");
   }
 
 }
