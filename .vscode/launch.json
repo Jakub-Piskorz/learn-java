@@ -2,13 +2,23 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Application",
+      "request": "launch",
+      "mainClass": "com.example.springboot.Application",
+      "projectName": "spring-boot-complete"
+    },
+    {
+      "type": "java",
       "name": "Spring Boot-Application<spring-boot-initial>",
       "request": "launch",
       "cwd": "${workspaceFolder}",
       "mainClass": "com.example.springboot.Application",
       "projectName": "spring-boot-initial",
       "args": "",
-      "envFile": "${workspaceFolder}/.env"
+      "envFile": "${workspaceFolder}/.env",
+      "noDebug": true,
+      "__progressId": "fef3c8d5-da32-4a6f-9e32-8e9b1dc9e6fd",
+      "__origin": "internal"
     }
   ]
 }
