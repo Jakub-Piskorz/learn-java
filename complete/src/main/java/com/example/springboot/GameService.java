@@ -27,4 +27,26 @@ public class GameService {
     games.add(newGame);
     return newGame;
   }
+
+  public Game updateGame(String id, Game updatedGame) throws Exception {
+    for (int i = 0; i < games.size(); i++) {
+      Game game = games.get(i);
+      if (game.getId().equals(id)) {
+        games.set(i, updatedGame);
+        return games.get(i);
+      }
+    }
+    throw new Exception("Game with id: " + id + "not found");
+  }
+
+  public void deleteGame(String id) throws Exception {
+    for (int i = 0; i < games.size(); i++) {
+      Game game = games.get(i);
+      if (game.getId().equals(id)) {
+        games.remove(i);
+        return;
+      }
+    }
+    throw new Exception("Game with id: " + id + "not found");
+  }
 }

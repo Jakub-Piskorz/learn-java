@@ -27,4 +27,14 @@ public class GameController {
     return gameService.addGame(newGame);
   }
 
+  @RequestMapping(value = "/games/{id}", method = RequestMethod.PUT)
+  public Game requestMethodName(@PathVariable String id, @RequestBody Game updatedGame) throws Exception {
+    return gameService.updateGame(id, updatedGame);
+  }
+
+  @RequestMapping(value = "/games/{id}", method = RequestMethod.DELETE)
+  public void requestMethodName(@PathVariable String id) throws Exception {
+    gameService.deleteGame(id);
+  }
+
 }
