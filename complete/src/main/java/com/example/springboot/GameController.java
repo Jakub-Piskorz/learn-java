@@ -4,27 +4,27 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestParam;
-
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class GameController {
 
-    @Autowired
-    private GameService gameService;
+  @Autowired
+  private GameService gameService;
 
-    @GetMapping("/games")
-    public List<Game> getAllGames() {
-        return gameService.getAllGames();
-    }
+  @GetMapping("/games")
+  public List<Game> getAllGames() {
+    return gameService.getAllGames();
+  }
 
-    @GetMapping("/games/{id}")
-    public Game getGame(@PathVariable String id) {
-        return gameService.getGame(id);
-    }
-    
+  @GetMapping("/games/{id}")
+  public Game getGame(@PathVariable String id) {
+    return gameService.getGame(id);
+  }
+
+  @RequestMapping(value = "/games", method = RequestMethod.POST)
+  public Game requestMethodName(@RequestBody Game newGame) {
+    return gameService.addGame(newGame);
+  }
 
 }

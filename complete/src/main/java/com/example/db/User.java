@@ -1,6 +1,5 @@
 package com.example.db;
 
-@Entity // This tells Hibernate to make a table out of this class
 public class User {
 
   private Integer id;
