@@ -17,9 +17,9 @@ public class GameController {
     return gameService.getAllGames();
   }
 
-  @GetMapping("/games/{id}")
-  public Game getGame(@PathVariable String id) {
-    return gameService.getGame(id);
+  @GetMapping("/games/{slug}")
+  public Game getGame(@PathVariable String slug) throws Exception {
+    return gameService.getGame(slug);
   }
 
   @RequestMapping(value = "/games", method = RequestMethod.POST)
@@ -27,14 +27,14 @@ public class GameController {
     return gameService.addGame(newGame);
   }
 
-  @RequestMapping(value = "/games/{id}", method = RequestMethod.PUT)
-  public Game requestMethodName(@PathVariable String id, @RequestBody Game updatedGame) throws Exception {
-    return gameService.updateGame(id, updatedGame);
+  @RequestMapping(value = "/games/{slug}", method = RequestMethod.PUT)
+  public Game requestMethodName(@PathVariable String slug, @RequestBody Game updatedGame) throws Exception {
+    return gameService.updateGame(slug, updatedGame);
   }
 
-  @RequestMapping(value = "/games/{id}", method = RequestMethod.DELETE)
-  public void requestMethodName(@PathVariable String id) throws Exception {
-    gameService.deleteGame(id);
+  @RequestMapping(value = "/games/{slug}", method = RequestMethod.DELETE)
+  public void requestMethodName(@PathVariable String slug) throws Exception {
+    gameService.deleteGame(slug);
   }
 
 }
