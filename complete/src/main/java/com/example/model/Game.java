@@ -1,4 +1,4 @@
-package com.example.db;
+package com.example.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,14 +15,16 @@ public class Game {
     private String slug;
     private String name;
     private String description;
+    private String publisher;
 
     protected Game() {
     }
 
-    public Game(String slug, String name, String description) {
+    public Game(String slug, String name, String description, String publisher) {
         this.slug = slug;
         this.name = name;
         this.description = description;
+        this.publisher = publisher;
     }
 
     @Override
@@ -43,4 +45,8 @@ public class Game {
     }
 
     public String getSlug() { return slug; }
+
+    public String getPublisher() {
+        return publisher;
+    }
 }
