@@ -1,8 +1,8 @@
 package com.example.repository;
 
 import com.example.model.Game;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface GameRepository extends CrudRepository<Game, Integer> {
-
+public interface GameRepository extends JpaRepository<Game, Integer> {
+    Game findBySlug(String slug);
 }

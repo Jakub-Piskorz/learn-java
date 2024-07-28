@@ -1,11 +1,7 @@
 package com.example.controller;
 
-import java.util.Arrays;
-import java.util.List;
-
 import com.example.model.Game;
 import com.example.repository.GameRepository;
-import com.example.springboot.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,25 +20,40 @@ public class GameController {
     public Iterable<Game> getAllGames() {
         return gameRepository.findAll();
     }
-//
-//  @GetMapping("/games/{slug}")
-//  public Game getGame(@PathVariable String slug) throws Exception {
-//    return gameService.getGame(slug);
-//  }
-//
-//  @RequestMapping(value = "/games", method = RequestMethod.POST)
-//  public Game requestMethodName(@RequestBody Game newGame) {
-//    return gameService.addGame(newGame);
-//  }
-//
-//  @RequestMapping(value = "/games/{slug}", method = RequestMethod.PUT)
-//  public Game requestMethodName(@PathVariable String slug, @RequestBody Game updatedGame) throws Exception {
-//    return gameService.updateGame(slug, updatedGame);
-//  }
-//
-//  @RequestMapping(value = "/games/{slug}", method = RequestMethod.DELETE)
-//  public void requestMethodName(@PathVariable String slug) throws Exception {
-//    gameService.deleteGame(slug);
-//  }
+
+    //
+    @GetMapping("/games/{slug}")
+    public Game getGame(@PathVariable String slug) {
+        return gameRepository.findBySlug(slug);
+    }
+
+    //
+    @RequestMapping(value = "/games", method = RequestMethod.POST)
+    public Game addGame(@RequestBody Game newGame) {
+        return gameRepository.save(newGame);
+    }
+
+    //
+    @RequestMapping(value = "/games/{slug}", method = RequestMethod.PUT)
+    public Game updateGame(@PathVariable String slug, @RequestBody Game updatedGame) throws Exception {
+        Game chosenGame = gameRepository.findBySlug(slug);
+        if (updatedGame.getName() != null) {
+            chosenGame.setName(updatedGame.getName());
+        }
+        if (updatedGame.getDescription() != null) {
+            chosenGame.setDescription(updatedGame.getDescription());
+        }
+        if (updatedGame.getPublisher() != null) {
+            chosenGame.setPublisher(updatedGame.getPublisher());
+        }
+        return gameRepository.save(chosenGame);
+    }
+
+    //
+    @RequestMapping(value = "/games/{slug}", method = RequestMethod.DELETE)
+    public void removeGame(@PathVariable String slug) throws Exception {
+        Game chosenGame = gameRepository.findBySlug(slug);
+        gameRepository.delete(chosenGame);
+    }
 //
 }
