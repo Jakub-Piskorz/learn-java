@@ -7,3 +7,13 @@ services:
       - 'POSTGRES_USER=myuser'
     ports:
       - '5432'
+    restart: always
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@localhost.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_POST: 5051
+    ports:
+      - '5050:80'
+    restart: always
