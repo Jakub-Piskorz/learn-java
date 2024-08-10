@@ -17,8 +17,10 @@ public class Application {
     @Bean
     CommandLineRunner commandLineRunner(GameRepository repo) {
         return args -> {
-            Game initGame = new Game("spring-sim-2", "Spring Boot Simulator 2", "Spring boot sim returned!!", "anonymous");
-            repo.save(initGame);
+            if (repo.count() == 0) {
+                Game initGame = new Game("spring-sim-2", "Spring Boot Simulator 2", "Spring boot sim returned!!", "anonymous");
+                repo.save(initGame);
+            }
         };
     }
 }
