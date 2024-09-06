@@ -21,20 +21,17 @@ public class GameController {
         return gameRepository.findAll();
     }
 
-    //
     @GetMapping("/games/{slug}")
     public Game getGame(@PathVariable String slug) {
         return gameRepository.findBySlug(slug);
     }
 
-    //
-    @RequestMapping(value = "/games", method = RequestMethod.POST)
+    @PostMapping("/games")
     public Game addGame(@RequestBody Game newGame) {
         return gameRepository.save(newGame);
     }
 
-    //
-    @RequestMapping(value = "/games/{slug}", method = RequestMethod.PUT)
+    @PutMapping("/games/{slug}")
     public Game updateGame(@PathVariable String slug, @RequestBody Game updatedGame) throws Exception {
         Game chosenGame = gameRepository.findBySlug(slug);
         if (updatedGame.getName() != null) {
@@ -49,8 +46,7 @@ public class GameController {
         return gameRepository.save(chosenGame);
     }
 
-    //
-    @RequestMapping(value = "/games/{slug}", method = RequestMethod.DELETE)
+    @DeleteMapping("/games/{slug}")
     public void removeGame(@PathVariable String slug) throws Exception {
         Game chosenGame = gameRepository.findBySlug(slug);
         gameRepository.delete(chosenGame);

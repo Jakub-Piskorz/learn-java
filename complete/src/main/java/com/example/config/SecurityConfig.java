@@ -15,8 +15,9 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.authorizeHttpRequests(auth -> auth
 //                        .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers("/api/games/**").permitAll()
-                        .anyRequest().authenticated()
+                                .requestMatchers("/api/games/**").permitAll()
+                                .requestMatchers("/").permitAll()
+                                .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.ignoringRequestMatchers(/*"/h2-console/**", */"/api/games/**"))
                 .headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
