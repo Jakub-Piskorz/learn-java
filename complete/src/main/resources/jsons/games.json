@@ -1,0 +1,20 @@
+[
+  {
+    "slug": "tibia",
+    "name": "Tibia",
+    "description": "Lorem Ipsum",
+    "publisher": "Cipsoft"
+  },
+  {
+    "slug": "wow",
+    "name": "World of Warcraft",
+    "description": "Lorem Ipsum",
+    "publisher": "Blizzard"
+  },
+  {
+    "slug": "inzoi",
+    "name": "InZOI",
+    "description": "Lorem Ipsum",
+    "publisher": "Krafton"
+  }
+]

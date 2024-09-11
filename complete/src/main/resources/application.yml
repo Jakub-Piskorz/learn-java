@@ -1,0 +1,23 @@
+logging:
+  level.org.springframework.jdbc: DEBUG
+spring.application.name: fastfile-be
+
+spring:
+  profiles:
+    active: dev
+  jpa:
+    generate-ddl: true
+    hibernate.ddl-auto: create-drop
+    show-sql: true
+
+server.port: 8080
+
+management:
+  endpoints.web.exposure.include: "*"
+  endpoint.health.show-details: always
+
+# global variables
+var:
+  firstName: Jakub
+  lastName: Piskorz
+
