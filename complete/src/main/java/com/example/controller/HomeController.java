@@ -18,4 +18,9 @@ public class HomeController {
     public GlobalVariables home() {
         return props;
     }
+
+    @GetMapping("/secured")
+    public String secured() {
+        return "Hello secured!";
+    }
 }

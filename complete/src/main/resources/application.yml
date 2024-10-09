@@ -1,16 +1,40 @@
 logging:
-  level.org.springframework.jdbc: DEBUG
-spring.application.name: fastfile-be
+  level:
+    org.springframework.jdbc: DEBUG
+    org.springframework.security: TRACE
 
 spring:
+  application:
+    name:
+      fastfile-be
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mydatabase
+    username: myuser
+    password: secret
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 5
   profiles:
     active: dev
   jpa:
     generate-ddl: true
-    hibernate.ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_ID}
+            client-secret: ${GITHUB_SECRET}
+          google:
+            client-id: ${GOOGLE_ID}
+            client-secret: ${GOOGLE_SECRET}
 
-server.port: 8080
+server:
+  port: 8080
 
 management:
   endpoints.web.exposure.include: "*"
