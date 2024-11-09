@@ -4,11 +4,13 @@ import com.example.model.Game;
 import com.example.repository.GameRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Nullable;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class GameLoader implements CommandLineRunner {
@@ -23,7 +25,9 @@ public class GameLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         try(InputStream inputStream = TypeReference.class.getResourceAsStream("/jsons/games.json")) {
-            repo.saveAll(objectMapper.readValue(inputStream, new TypeReference<List<Game>>(){}));
+            if (repo.count() < 2) {
+                repo.saveAll(objectMapper.readValue(inputStream, new TypeReference<List<Game>>(){}));
+            }
         }
     }
 }

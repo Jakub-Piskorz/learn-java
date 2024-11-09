@@ -34,6 +34,7 @@ public class GameController {
     @PutMapping("/games/{slug}")
     public Game updateGame(@PathVariable String slug, @RequestBody Game updatedGame) throws Exception {
         Game chosenGame = gameRepository.findBySlug(slug);
+        if (chosenGame == null) return null;
         if (updatedGame.getName() != null) {
             chosenGame.setName(updatedGame.getName());
         }
