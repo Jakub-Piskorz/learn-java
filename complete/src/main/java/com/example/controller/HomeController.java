@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
+
 @RestController
 @Profile("dev")
 public class HomeController {
@@ -15,8 +17,8 @@ public class HomeController {
     }
 
     @GetMapping("/")
-    public GlobalVariables home() {
-        return props;
+    public String home(Principal principal) {
+        return "Hello " + principal.getName();
     }
 
     @GetMapping("/secured")
