@@ -18,10 +18,11 @@ spring:
     active: dev
   jpa:
     generate-ddl: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      format_sql: true
     show-sql: true
+    database: postgresql
+    dialect: org.hibernate.dialect.PostgreSQLDialect
   security:
     oauth2:
       client:
