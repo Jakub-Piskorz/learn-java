@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/v1/games")
 public class GameController {
 
     @Autowired
@@ -16,22 +16,22 @@ public class GameController {
         this.gameRepository = gameRepository;
     }
 
-    @GetMapping("/games")
+    @GetMapping("/")
     public Iterable<Game> getAllGames() {
         return gameRepository.findAll();
     }
 
-    @GetMapping("/games/{slug}")
+    @GetMapping("/{slug}")
     public Game getGame(@PathVariable String slug) {
         return gameRepository.findBySlug(slug);
     }
 
-    @PostMapping("/games")
+    @PostMapping("/")
     public Game addGame(@RequestBody Game newGame) {
         return gameRepository.save(newGame);
     }
 
-    @PutMapping("/games/{slug}")
+    @PutMapping("/{slug}")
     public Game updateGame(@PathVariable String slug, @RequestBody Game updatedGame) throws Exception {
         Game chosenGame = gameRepository.findBySlug(slug);
         if (chosenGame == null) return null;
@@ -47,7 +47,7 @@ public class GameController {
         return gameRepository.save(chosenGame);
     }
 
-    @DeleteMapping("/games/{slug}")
+    @DeleteMapping("/{slug}")
     public void removeGame(@PathVariable String slug) throws Exception {
         Game chosenGame = gameRepository.findBySlug(slug);
         gameRepository.delete(chosenGame);
