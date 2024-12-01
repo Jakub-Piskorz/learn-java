@@ -16,7 +16,7 @@ public class GameController {
         this.gameRepository = gameRepository;
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public Iterable<Game> getAllGames() {
         return gameRepository.findAll();
     }

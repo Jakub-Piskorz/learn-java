@@ -21,8 +21,8 @@ public class HomeController {
         return "Hello " + principal.getName();
     }
 
-    @GetMapping("/secured")
+    @GetMapping("/test")
     public String secured() {
-        return "Hello secured!";
+        return "Hello" + props.expirationMs();
     }
 }
