@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @Data
 @Entity
+@Getter
+@Setter
 @Table(name="_user")
 @RequiredArgsConstructor
 public class User {
