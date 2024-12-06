@@ -1,8 +1,6 @@
 package com.example.controller;
 
 import com.example.model.UserLogin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.example.auth.JwtService;
 import com.example.model.User;
@@ -18,8 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private UserService userService;
