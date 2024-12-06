@@ -1,7 +1,6 @@
 package com.example.auth;
 
-import io.jsonwebtoken.*;
-import org.springframework.stereotype.Component;
+import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -10,6 +9,7 @@ import java.util.Date;
 @Service
 public class JwtService {
     SecretKey secretKey = Jwts.SIG.HS256.key().build();
+
 
     public String generateToken(String username) {
         long expirationMs = 3600000;

@@ -1,12 +1,15 @@
 package com.example.controller;
 
+import com.example.model.UserLogin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.example.auth.JwtService;
 import com.example.model.User;
+import com.example.service.AuthService;
 import com.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,11 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    @Autowired
-    UserService userService;
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
-    JwtService jwtService;
+    private UserService userService;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Autowired
+    private AuthService authService;
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -30,10 +39,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody User user) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
-        );
-        return jwtService.generateToken(auth.getName());
+    public String login(@RequestBody UserLogin user) {
+        return authService.authenticate(user.getUsername(), user.getPassword());
     }
 }

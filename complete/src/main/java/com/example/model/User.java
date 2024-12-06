@@ -2,7 +2,6 @@ package com.example.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @Data
 @Entity
@@ -35,7 +34,8 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-
-
+    // No-arguments constructor for Hibernate
+    public User() {
+    }
 
 }
