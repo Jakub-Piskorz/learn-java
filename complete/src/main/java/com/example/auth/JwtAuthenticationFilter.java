@@ -22,6 +22,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        String path = request.getRequestURI();
+        // Skip authentication for public paths
+        if (path.startsWith("/auth/")) {
+            System.out.println("AUTHS!");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // Extract the token from the Authorization header
         String token = request.getHeader("Authorization");
 
