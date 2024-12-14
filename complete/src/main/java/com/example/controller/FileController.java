@@ -1,9 +1,17 @@
 package com.example.controller;
 
+import com.example.dto.FileUploadRequest;
 import com.example.model.FileMetadata;
 import com.example.repository.FileMetadataRepository;
+import com.example.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/files")
@@ -12,8 +20,12 @@ public class FileController {
     @Autowired
     private final FileMetadataRepository repo;
 
-    public FileController(FileMetadataRepository repo) {
+    @Autowired
+    private final FileService fileService;
+
+    public FileController(FileMetadataRepository repo, FileService fileService) {
         this.repo = repo;
+        this.fileService = fileService;
     }
 
     @GetMapping("/")
@@ -22,19 +34,23 @@ public class FileController {
     }
 
     @GetMapping("/{id}")
-    public FileMetadata getFile(@PathVariable Long id) {
+    public Optional<FileMetadata> getFile(@PathVariable Long id) {
         return repo.findById(id);
     }
 
     @PostMapping("/")
-    public FileMetadata addFile(@RequestBody FileMetadata newFile) {
-        return repo.save(newFile);
+    public FileMetadata addFile(@RequestBody FileUploadRequest fileRequest) throws IOException {
+        return fileService.addFile(fileRequest);
     }
 
     @PutMapping("/{id}")
-    public FileMetadata updateFile(@PathVariable Long id, @RequestBody FileMetadata updatedFile) throws Exception {
-        FileMetadata chosenFile = repo.findById(id);
-        if (chosenFile == null) return null;
+    public FileMetadata updateFile(@PathVariable Long id, @RequestBody FileMetadata updatedFile) throws Exception, NullPointerException {
+        Optional<FileMetadata> optionalChosenFile = repo.findById(id);
+        if (optionalChosenFile.isEmpty()) {
+            throw new Exception("No file.");
+        }
+        FileMetadata chosenFile = optionalChosenFile.get();
+
         if (updatedFile.getFileName() != null) {
             chosenFile.setFileName(updatedFile.getFileName());
         }
@@ -48,10 +64,12 @@ public class FileController {
     }
 
     @DeleteMapping("/{id}")
-    public void removeFile(@PathVariable Long id) throws Exception {
-        FileMetadata chosenFile = repo.findById(id);
-        if (chosenFile != null) {
-            repo.delete(chosenFile);
+    public ResponseEntity<String> removeFile(@PathVariable Long id) throws Exception {
+        boolean isFileDeleted = fileService.delete(id);
+        if (isFileDeleted) {
+            return new ResponseEntity<>("Successfully deleted file.", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("File not found.", HttpStatus.NOT_FOUND);
         }
     }
 //
