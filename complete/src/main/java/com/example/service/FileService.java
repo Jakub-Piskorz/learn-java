@@ -30,13 +30,16 @@ public class FileService {
         return repo.save(fileMetadata);
     }
 
-    public boolean delete(Long id) {
-        Optional<FileMetadata> optionalFile = repo.findById(id);
-        if (optionalFile.isEmpty()) {
+    public boolean delete(Long id) throws IOException {
+        Optional<FileMetadata> optionalFileMetadata = repo.findById(id);
+        if (optionalFileMetadata.isEmpty()) {
             return false;
         }
-        FileMetadata file = optionalFile.get();
-        repo.delete(file);
+        FileMetadata fileMetadata = optionalFileMetadata.get();
+
+        Path filePath = Paths.get("files/" + fileMetadata.getFilePath() + "/" + fileMetadata.getFileName());
+        Files.delete(filePath);
+        repo.delete(fileMetadata);
         return true;
     }
 
