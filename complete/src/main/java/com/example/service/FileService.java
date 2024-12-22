@@ -1,15 +1,19 @@
 package com.example.service;
 
-import com.example.dto.FileUploadRequest;
 import com.example.model.FileMetadata;
 import com.example.repository.FileMetadataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Service
@@ -17,16 +21,27 @@ public class FileService {
     @Autowired
     private FileMetadataRepository repo;
 
-    public FileMetadata addFile(FileUploadRequest fileUpload) throws IOException {
-        FileMetadata fileMetadata = fileUpload.getFileMetadata();
-        String content = fileUpload.getContent();
+    public FileMetadata addFile(MultipartFile file) throws IOException {
 
-        Path filePath = Paths.get("files/" + fileMetadata.getFilePath() + "/" + fileMetadata.getFileName());
-        if (Files.exists(filePath)) {
+        if (file == null || file.isEmpty()) {
             return null;
         }
-        Files.createDirectories(filePath.getParent());
-        Files.write(filePath, content.getBytes());
+
+        Path destinationPath = Paths.get("files/").resolve(file.getOriginalFilename());
+        if (Files.exists(destinationPath)) {
+            return null;
+        }
+        Files.copy(file.getInputStream(), destinationPath);
+
+        FileMetadata fileMetadata = new FileMetadata();
+        BasicFileAttributes attrs = Files.readAttributes(destinationPath, BasicFileAttributes.class);
+
+        fileMetadata.setFileName(file.getOriginalFilename());
+        fileMetadata.setFilePath("");
+        String createdAt = LocalDateTime.ofInstant(attrs.creationTime().toInstant(), ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        fileMetadata.setCreatedAt(createdAt);
+        fileMetadata.setUserId("1");
         return repo.save(fileMetadata);
     }
 

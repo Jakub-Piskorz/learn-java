@@ -6,9 +6,11 @@ import com.example.repository.FileMetadataRepository;
 import com.example.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -38,9 +40,14 @@ public class FileController {
         return repo.findById(id);
     }
 
-    @PostMapping("/")
-    public FileMetadata addFile(@RequestBody FileUploadRequest fileRequest) throws IOException {
-        return fileService.addFile(fileRequest);
+    @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> addFile(@RequestBody MultipartFile file) throws IOException {
+        FileMetadata uploadedFile = fileService.addFile(file);
+        if (uploadedFile != null) {
+            return new ResponseEntity<>("Successfully uploaded file.", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Something went wrong.", HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping("/{id}")
