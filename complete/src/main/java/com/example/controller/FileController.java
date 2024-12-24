@@ -1,18 +1,21 @@
 package com.example.controller;
 
-import com.example.dto.FileUploadRequest;
 import com.example.model.FileMetadata;
 import com.example.repository.FileMetadataRepository;
 import com.example.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Optional;
 
 @RestController
@@ -36,13 +39,22 @@ public class FileController {
     }
 
     @GetMapping("/{id}")
-    public Optional<FileMetadata> getFile(@PathVariable Long id) {
-        return repo.findById(id);
+    public ResponseEntity downloadFile(@PathVariable Long id) throws IOException {
+        File fileToDownload = fileService.downloadFile(id);
+        if (fileToDownload == null) {
+            return new ResponseEntity<>("Something went wrong downloading file", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileToDownload.getName() + "\"")
+                .contentLength(fileToDownload.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(new InputStreamResource(Files.newInputStream(fileToDownload.toPath())));
     }
 
     @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> addFile(@RequestBody MultipartFile file) throws IOException {
-        FileMetadata uploadedFile = fileService.addFile(file);
+        FileMetadata uploadedFile = fileService.uploadFile(file);
         if (uploadedFile != null) {
             return new ResponseEntity<>("Successfully uploaded file.", HttpStatus.OK);
         } else {

@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -21,7 +22,7 @@ public class FileService {
     @Autowired
     private FileMetadataRepository repo;
 
-    public FileMetadata addFile(MultipartFile file) throws IOException {
+    public FileMetadata uploadFile(MultipartFile file) throws IOException {
 
         if (file == null || file.isEmpty()) {
             return null;
@@ -43,6 +44,24 @@ public class FileService {
         fileMetadata.setCreatedAt(createdAt);
         fileMetadata.setUserId("1");
         return repo.save(fileMetadata);
+    }
+
+    public File downloadFile(Long id) {
+        Optional<FileMetadata> optionalFileMetadata = repo.findById(id);
+        if (optionalFileMetadata.isEmpty()) {
+            return null;
+        }
+        FileMetadata fileMetadata = optionalFileMetadata.get();
+
+        Path filePath = Paths.get("files/" + fileMetadata.getFilePath() + "/" + fileMetadata.getFileName());
+        File fileToDownload = new File(String.valueOf(filePath));
+        if (!fileToDownload.exists()) {
+            repo.delete(fileMetadata);
+            return null;
+        }
+        System.out.println("File path: " + filePath.toString());
+
+        return fileToDownload;
     }
 
     public boolean delete(Long id) throws IOException {
