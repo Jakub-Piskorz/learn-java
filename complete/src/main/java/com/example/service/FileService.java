@@ -22,23 +22,35 @@ public class FileService {
     @Autowired
     private FileMetadataRepository repo;
 
-    public FileMetadata uploadFile(MultipartFile file) throws IOException {
+    public FileMetadata uploadFile(MultipartFile file, String filePath) throws IOException {
 
         if (file == null || file.isEmpty()) {
+            System.out.println("File doesn't exist.");
             return null;
         }
 
-        Path destinationPath = Paths.get("files/").resolve(file.getOriginalFilename());
-        if (Files.exists(destinationPath)) {
+        if (filePath == null) {
+            filePath = "";
+        }
+
+        Path path = Paths.get("files/" + filePath).normalize();
+        Path pathWithFile = Paths.get("files/" + filePath).resolve(file.getOriginalFilename());
+
+//         Check if path exists
+        if (!Files.exists(path)) {
+            Files.createDirectories(path);
+        }
+        if (Files.exists(pathWithFile)) {
+            System.out.println("File already exists: " + pathWithFile);
             return null;
         }
-        Files.copy(file.getInputStream(), destinationPath);
+        Files.copy(file.getInputStream(), pathWithFile);
 
         FileMetadata fileMetadata = new FileMetadata();
-        BasicFileAttributes attrs = Files.readAttributes(destinationPath, BasicFileAttributes.class);
+        BasicFileAttributes attrs = Files.readAttributes(pathWithFile, BasicFileAttributes.class);
 
         fileMetadata.setFileName(file.getOriginalFilename());
-        fileMetadata.setFilePath("");
+        fileMetadata.setFilePath(filePath);
         String createdAt = LocalDateTime.ofInstant(attrs.creationTime().toInstant(), ZoneId.systemDefault())
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         fileMetadata.setCreatedAt(createdAt);

@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import com.example.dto.FileDTO;
 import com.example.model.FileMetadata;
 import com.example.repository.FileMetadataRepository;
 import com.example.service.FileService;
@@ -14,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Optional;
 
@@ -52,9 +52,13 @@ public class FileController {
                 .body(new InputStreamResource(Files.newInputStream(fileToDownload.toPath())));
     }
 
-    @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> addFile(@RequestBody MultipartFile file) throws IOException {
-        FileMetadata uploadedFile = fileService.uploadFile(file);
+    @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploadFile(
+            @RequestPart(value = "file") MultipartFile file,
+            @RequestPart(value = "filePath") String filePath) throws IOException {
+        FileDTO fileDTO = new FileDTO(filePath, file);
+        System.out.println(filePath);
+        FileMetadata uploadedFile = fileService.uploadFile(file, filePath);
         if (uploadedFile != null) {
             return new ResponseEntity<>("Successfully uploaded file.", HttpStatus.OK);
         } else {
@@ -63,7 +67,7 @@ public class FileController {
     }
 
     @PutMapping("/{id}")
-    public FileMetadata updateFile(@PathVariable Long id, @RequestBody FileMetadata updatedFile) throws Exception, NullPointerException {
+    public FileMetadata updateFileMetadata(@PathVariable Long id, @RequestBody FileMetadata updatedFile) throws Exception, NullPointerException {
         Optional<FileMetadata> optionalChosenFile = repo.findById(id);
         if (optionalChosenFile.isEmpty()) {
             throw new Exception("No file.");
