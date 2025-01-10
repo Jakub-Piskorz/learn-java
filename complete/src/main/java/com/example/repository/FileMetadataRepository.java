@@ -9,4 +9,7 @@ import java.util.Optional;
 public interface FileMetadataRepository extends JpaRepository<FileMetadata, Integer> {
     @Nullable
     Optional<FileMetadata> findById(Long id);
+
+    @Nullable
+    Iterable<FileMetadata> findAllByFileNameLike(String fileName);
 }

@@ -38,6 +38,11 @@ public class FileController {
         return repo.findAll();
     }
 
+    @GetMapping("/search/{fileName}")
+    public Iterable<FileMetadata> searchFiles(@PathVariable String fileName) {
+        return fileService.searchFiles(fileName);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity downloadFile(@PathVariable Long id) throws IOException {
         File fileToDownload = fileService.downloadFile(id);
@@ -55,7 +60,7 @@ public class FileController {
     @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadFile(
             @RequestPart(value = "file") MultipartFile file,
-            @RequestPart(value = "filePath") String filePath) throws IOException {
+            @RequestPart(value = "filePath", required = false) String filePath) throws IOException {
         FileDTO fileDTO = new FileDTO(filePath, file);
         System.out.println(filePath);
         FileMetadata uploadedFile = fileService.uploadFile(file, filePath);

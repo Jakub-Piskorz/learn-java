@@ -92,4 +92,8 @@ public class FileService {
     public FileMetadata findById(Long id) {
         return repo.findById(id).orElseThrow();
     }
+
+    public Iterable<FileMetadata> searchFiles(String fileName) {
+        return repo.findAllByFileNameLike("%" + fileName + "%");
+    }
 }
