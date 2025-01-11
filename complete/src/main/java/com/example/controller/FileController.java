@@ -15,6 +15,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Optional;
 
@@ -39,8 +42,10 @@ public class FileController {
     }
 
     @GetMapping("/search/{fileName}")
-    public Iterable<FileMetadata> searchFiles(@PathVariable String fileName) {
-        return fileService.searchFiles(fileName);
+    public Iterable<FileMetadata> searchFiles(@PathVariable String fileName) throws UnsupportedEncodingException {
+        // Spaces in URL are "%20". We have to deal with that.
+        String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
+        return fileService.searchFiles(decodedFileName);
     }
 
     @GetMapping("/{id}")
