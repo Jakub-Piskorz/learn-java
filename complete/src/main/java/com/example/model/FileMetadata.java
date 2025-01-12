@@ -25,7 +25,7 @@ public class FileMetadata {
 
     @NonNull
     @Column(nullable = false)
-    private String userId;
+    private Long ownerId;
 
     // No-arguments constructor for Hibernate
     public FileMetadata() {

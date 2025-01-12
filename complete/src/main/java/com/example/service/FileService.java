@@ -54,7 +54,7 @@ public class FileService {
         String createdAt = LocalDateTime.ofInstant(attrs.creationTime().toInstant(), ZoneId.systemDefault())
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         fileMetadata.setCreatedAt(createdAt);
-        fileMetadata.setUserId("1");
+        fileMetadata.setOwnerId(1L);
         return repo.save(fileMetadata);
     }
 
