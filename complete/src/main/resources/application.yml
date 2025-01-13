@@ -4,8 +4,8 @@ spring:
       fastfile-be
   datasource:
     url: jdbc:postgresql://localhost:5432/mydatabase
-    username: myuser
-    password: secret
+    username: ${var.dbUsername}
+    password: ${var.dbPassword}
     hikari:
       connectionTimeout: 20000
       maximumPoolSize: 5
@@ -36,9 +36,4 @@ server:
 management:
   endpoints.web.exposure.include: "*"
   endpoint.health.show-details: always
-
-# global variables
-var:
-  firstName: Jakub
-  lastName: Piskorz
 
