@@ -9,5 +9,8 @@ public record GlobalVariables(
         String secretKey,
         Long expirationMs,
         String dbUsername,
-        String dbPassword) {
+        String dbPassword,
+        String ffUsername,
+        String ffPassword
+) {
 }

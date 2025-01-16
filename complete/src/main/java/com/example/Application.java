@@ -1,7 +1,6 @@
 package com.example;
 
 import com.example.config.GlobalVariables;
-import com.example.model.Game;
 import com.example.repository.GameRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -19,11 +18,8 @@ public class Application {
 
     @Bean
     CommandLineRunner commandLineRunner(GameRepository repo) {
+        System.out.println(repo.findAll());
         return args -> {
-            if (repo.count() == 0) {
-                Game initGame = new Game("spring-sim-2", "Spring Boot Simulator 2", "Spring boot sim returned!!", "anonymous");
-                repo.save(initGame);
-            }
         };
     }
 }
