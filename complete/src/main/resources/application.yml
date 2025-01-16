@@ -4,8 +4,8 @@ spring:
       fastfile-be
   datasource:
     url: jdbc:postgresql://localhost:5432/mydatabase
-    username: ${var.dbUsername}
-    password: ${var.dbPassword}
+    username: ${var_dbUsername}
+    password: ${var_dbPassword}
     hikari:
       connectionTimeout: 20000
       maximumPoolSize: 5

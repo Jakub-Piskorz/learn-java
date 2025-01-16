@@ -10,10 +10,10 @@ import java.security.Principal;
 @RestController
 @Profile("dev")
 public class HomeController {
-    private final GlobalVariables props;
+    private final GlobalVariables env;
 
-    public HomeController(GlobalVariables props) {
-        this.props = props;
+    public HomeController(GlobalVariables env) {
+        this.env = env;
     }
 
     @GetMapping("/")
@@ -23,6 +23,6 @@ public class HomeController {
 
     @GetMapping("/test")
     public String secured() {
-        return "Hello" + props.expirationMs();
+        return "Hello" + env.dbUsername();
     }
 }
