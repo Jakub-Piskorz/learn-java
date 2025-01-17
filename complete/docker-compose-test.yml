@@ -1,19 +1,19 @@
 services:
-  postgres:
+  postgres-test:
     image: 'postgres:latest'
     environment:
-      - 'POSTGRES_DB=mydatabase'
+      - 'POSTGRES_DB=mydatabase-test'
       - 'POSTGRES_PASSWORD=${var_dbPassword}'
       - 'POSTGRES_USER=${var_dbUsername}'
     ports:
-      - '5432:5432'
+      - '5433:5433'
     restart: always
-  pgadmin:
+  pgadmin-test:
     image: dpage/pgadmin4:latest
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@localhost.com
       PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_LISTEN_POST: 5050
+      PGADMIN_LISTEN_POST: 5051
     ports:
-      - '5050:80'
+      - '5051:80'
     restart: always
