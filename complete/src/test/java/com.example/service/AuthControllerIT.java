@@ -13,16 +13,26 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.MountableFile;
 
 // Integration test for {@link AuthController}
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
+@Testcontainers
 public class AuthControllerIT {
-    private final MockMvc mockMvc;
-    @Getter
+
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
     private final GlobalVariables env;
+
+    @Getter
+    private static final PostgreSQLContainer<?> postgres =
+            new PostgreSQLContainer<>("postgres:latest");
 
     @Autowired
     public AuthControllerIT(MockMvc mockMvc, GlobalVariables env) {
@@ -30,11 +40,19 @@ public class AuthControllerIT {
         this.env = env;
     }
 
+    static {
+        postgres.start();
+    }
+
     @Test
     public void testLogin() throws Exception {
         String loginParams = "{\"username\":\"" + env.ffUsername() + "\",\"password\":\"" + env.ffPassword() + "\"}";
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/auth/login").content(loginParams).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)).andExpect(MockMvcResultMatchers.status().isOk()).andExpect(result -> {
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/login")
+                .content(loginParams).contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(result -> {
             int status = result.getResponse().getStatus();
             if (status == 200) {
                 System.out.println("Successfully logged in");
