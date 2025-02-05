@@ -25,10 +25,6 @@ public class AuthControllerIT {
     @ServiceConnection
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest");
 
-    static {
-        postgres.start();
-    }
-
     @Test
     public void testRegister() throws Exception {
         UserLogin userLogin = new UserLogin("qbek", "gay");
