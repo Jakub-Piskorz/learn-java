@@ -1,65 +1,40 @@
 package com.example.service;
 
-import com.example.config.GlobalVariables;
-import lombok.Getter;
+import com.example.model.User;
+import com.example.model.UserLogin;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.MountableFile;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 // Integration test for {@link AuthController}
-@SpringBootTest
-@ExtendWith(SpringExtension.class)
-@ActiveProfiles("test")
-@AutoConfigureMockMvc
 @Testcontainers
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class AuthControllerIT {
 
     @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private final GlobalVariables env;
+    TestRestTemplate restTemplate;
 
-    @Getter
-    private static final PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:latest");
-
-    @Autowired
-    public AuthControllerIT(MockMvc mockMvc, GlobalVariables env) {
-        this.mockMvc = mockMvc;
-        this.env = env;
-    }
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest");
 
     static {
         postgres.start();
     }
 
     @Test
-    public void testLogin() throws Exception {
-        String loginParams = "{\"username\":\"" + env.ffUsername() + "\",\"password\":\"" + env.ffPassword() + "\"}";
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/auth/login")
-                .content(loginParams).contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(result -> {
-            int status = result.getResponse().getStatus();
-            if (status == 200) {
-                System.out.println("Successfully logged in");
-            } else {
-                throw new AssertionError("Expected HTTP status 200, but got " + status);
-            }
-        });
+    public void testRegister() throws Exception {
+        UserLogin userLogin = new UserLogin("qbek", "gay");
+        String jwtToken = restTemplate.postForObject("/auth/login", userLogin, String.class);
+        assertThat(jwtToken.length()).isGreaterThan(0);
+        ;
     }
 
 }
