@@ -38,6 +38,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((a) -> a
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/home").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);  // Add JWT authentication filter before the default authentication filter

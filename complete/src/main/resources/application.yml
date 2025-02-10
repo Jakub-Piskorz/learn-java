@@ -9,17 +9,14 @@ spring:
     hikari:
       connectionTimeout: 20000
       maximumPoolSize: 5
-  docker:
   profiles:
     active: dev
   jpa:
     generate-ddl: true
     hibernate:
-      format_sql: true
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     database: postgresql
-    dialect: org.hibernate.dialect.PostgreSQLDialect
   security:
     oauth2:
       client:
@@ -33,6 +30,7 @@ spring:
 
 server:
   port: 8080
+  address: 0.0.0.0
 
 
 
