@@ -33,6 +33,6 @@ public class AuthController {
 
     @PostMapping("/login")
     public String login(@RequestBody UserLogin user) {
-        return authService.authenticate(user.getUsername(), user.getPassword());
+        return authService.authenticate(user.getLogin(), user.getPassword());
     }
 }

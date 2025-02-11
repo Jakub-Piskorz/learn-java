@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 public class UserLogin {
-    private final String username;
+    private final String login;
     private final String password;
 }
