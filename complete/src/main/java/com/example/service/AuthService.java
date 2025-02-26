@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.example.dto.UserDTO;
 import com.example.model.User;
 import com.example.repository.UserRepository;
 import com.example.auth.JwtService;
@@ -36,5 +37,16 @@ public class AuthService {
 
         // Generate token if valid
         return jwtService.generateToken(user.getUsername());
+    }
+
+    public UserDTO getCurrentUser(String token) {
+        token = token.substring(7); // Remove "Bearer "
+        String username = jwtService.validateToken(token);
+        Optional<User> optUser = userRepository.findByUsername(username);
+        if (optUser.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+        User user = optUser.get();
+        return new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getFirstName(), user.getLastName());
     }
 }
