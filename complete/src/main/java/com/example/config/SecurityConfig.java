@@ -36,13 +36,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-//              Requires HTTPS
-                .requiresChannel(channel ->
-                        channel.anyRequest().requiresSecure())
                 .authorizeHttpRequests((a) -> a
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/").permitAll()
-                        .requestMatchers("/home").permitAll()
+                        .requestMatchers("/test").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class);  // Add JWT authentication filter before the default authentication filter

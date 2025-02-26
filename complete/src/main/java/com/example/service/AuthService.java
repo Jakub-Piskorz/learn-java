@@ -25,7 +25,7 @@ public class AuthService {
         // Find the user by username
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
-            throw new RuntimeException("User not found");
+            throw new RuntimeException("User not found:" + username);
         }
 
         // Check if the password matches

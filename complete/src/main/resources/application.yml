@@ -9,8 +9,6 @@ spring:
     hikari:
       connectionTimeout: 20000
       maximumPoolSize: 5
-  profiles:
-    active: dev
   jpa:
     generate-ddl: true
     hibernate:
