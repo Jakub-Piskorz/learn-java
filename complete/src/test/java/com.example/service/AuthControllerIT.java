@@ -1,6 +1,7 @@
 package com.example.service;
 
 import com.example.config.GlobalVariables;
+import com.example.dto.UserDTO;
 import com.example.model.User;
 import com.example.model.UserLogin;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -46,6 +50,19 @@ public class AuthControllerIT {
         UserLogin userLogin = new UserLogin(env.ffUsername(), env.ffPassword());
         String jwtToken = restTemplate.postForObject("/auth/login", userLogin, String.class);
         assertThat(jwtToken.length()).isGreaterThan(0);
-    }
 
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + jwtToken);
+
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        UserDTO userDTO = restTemplate.exchange("/auth/user", HttpMethod.GET, requestEntity, UserDTO.class).getBody();
+        assertThat(userDTO).isNotNull();
+        assert userDTO != null;
+        assertThat(userDTO.getId()).isEqualTo(user.getId());
+        assertThat(userDTO.getEmail()).isEqualTo(user.getEmail());
+        assertThat(userDTO.getFirstName()).isEqualTo(user.getFirstName());
+        assertThat(userDTO.getLastName()).isEqualTo(user.getLastName());
+    }
 }
