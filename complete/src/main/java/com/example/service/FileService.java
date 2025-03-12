@@ -3,18 +3,23 @@ package com.example.service;
 import com.example.model.FileMetadata;
 import com.example.repository.FileMetadataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -34,7 +39,7 @@ public class FileService {
         }
 
         Path path = Paths.get("files/" + filePath).normalize();
-        Path pathWithFile = Paths.get("files/" + filePath).resolve(file.getOriginalFilename());
+        Path pathWithFile = Paths.get("files/" + filePath).resolve(Objects.requireNonNull(file.getOriginalFilename()));
 
 //         Check if path exists
         if (!Files.exists(path)) {
@@ -58,27 +63,42 @@ public class FileService {
         return repo.save(fileMetadata);
     }
 
-    public File downloadFile(Long id) {
+    public ResponseEntity<InputStreamResource> downloadFile(Long id) throws IOException {
         Optional<FileMetadata> optionalFileMetadata = repo.findById(id);
-        if (optionalFileMetadata.isEmpty()) {
-            return null;
-        }
+        assert Objects.requireNonNull(optionalFileMetadata).isPresent();
+
         FileMetadata fileMetadata = optionalFileMetadata.get();
 
         Path filePath = Paths.get("files/" + fileMetadata.getFilePath() + "/" + fileMetadata.getFileName());
-        File fileToDownload = new File(String.valueOf(filePath));
-        if (!fileToDownload.exists()) {
-            repo.delete(fileMetadata);
-            return null;
-        }
-        System.out.println("File path: " + filePath.toString());
 
-        return fileToDownload;
+
+        if (!Files.exists(filePath)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        InputStream inputStream = Files.newInputStream(filePath);
+        InputStreamResource resource = new InputStreamResource(inputStream);
+
+        String contentType = Files.probeContentType(filePath);
+        contentType = contentType != null ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE;
+
+        // Building headers for HTTP response
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_TYPE, contentType);
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileMetadata.getFileName() + "\"");
+        headers.add(HttpHeaders.PRAGMA, "no-cache");
+        headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
+        headers.add(HttpHeaders.EXPIRES, "0");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType(contentType))
+                .body(resource);
     }
 
-    public boolean delete(Long id) throws IOException {
+    public boolean delete(Long id) throws IOException, NullPointerException {
         Optional<FileMetadata> optionalFileMetadata = repo.findById(id);
-        if (optionalFileMetadata.isEmpty()) {
+        if (Objects.requireNonNull(optionalFileMetadata).isEmpty()) {
             return false;
         }
         FileMetadata fileMetadata = optionalFileMetadata.get();

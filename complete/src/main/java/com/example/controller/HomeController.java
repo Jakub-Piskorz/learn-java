@@ -6,9 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 
 @RestController
 @Profile("dev")
@@ -26,9 +24,11 @@ public class HomeController {
     }
 
     @GetMapping("/test")
-    public void secured() throws IOException {
-        Path path = Paths.get("files/").normalize();
-        Files.walk(path, 1)
-                .forEach(System.out::println);
+    public void secured() {
+        FileSystem fileSystem = FileSystems.getDefault();
+        for (FileStore store : fileSystem.getFileStores()) {
+            System.out.println(store.toString());
+        }
+
     }
 }

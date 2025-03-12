@@ -1,24 +1,20 @@
 package com.example.controller;
 
-import com.example.dto.FileDTO;
 import com.example.model.FileMetadata;
 import com.example.repository.FileMetadataRepository;
 import com.example.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -42,31 +38,21 @@ public class FileController {
     }
 
     @GetMapping("/search/{fileName}")
-    public Iterable<FileMetadata> searchFiles(@PathVariable String fileName) throws UnsupportedEncodingException {
+    public Iterable<FileMetadata> searchFiles(@PathVariable String fileName) {
         // Spaces in URL are "%20". We have to deal with that.
         String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
         return fileService.searchFiles(decodedFileName);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity downloadFile(@PathVariable Long id) throws IOException {
-        File fileToDownload = fileService.downloadFile(id);
-        if (fileToDownload == null) {
-            return new ResponseEntity<>("Something went wrong downloading file", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileToDownload.getName() + "\"")
-                .contentLength(fileToDownload.length())
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(new InputStreamResource(Files.newInputStream(fileToDownload.toPath())));
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable Long id) throws IOException {
+        return fileService.downloadFile(id);
     }
 
     @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadFile(
             @RequestPart(value = "file") MultipartFile file,
             @RequestPart(value = "filePath", required = false) String filePath) throws IOException {
-        FileDTO fileDTO = new FileDTO(filePath, file);
         System.out.println(filePath);
         FileMetadata uploadedFile = fileService.uploadFile(file, filePath);
         if (uploadedFile != null) {
@@ -77,11 +63,9 @@ public class FileController {
     }
 
     @PutMapping("/{id}")
-    public FileMetadata updateFileMetadata(@PathVariable Long id, @RequestBody FileMetadata updatedFile) throws Exception, NullPointerException {
+    public FileMetadata updateFileMetadata(@PathVariable Long id, @RequestBody FileMetadata updatedFile) {
         Optional<FileMetadata> optionalChosenFile = repo.findById(id);
-        if (optionalChosenFile.isEmpty()) {
-            throw new Exception("No file.");
-        }
+        assert Objects.requireNonNull(optionalChosenFile).isPresent();
         FileMetadata chosenFile = optionalChosenFile.get();
 
         if (updatedFile.getFileName() != null) {
