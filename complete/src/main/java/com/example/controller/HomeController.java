@@ -30,27 +30,8 @@ public class HomeController {
         return "Hello World";
     }
 
-    @GetMapping("/test/**")
-    public ResponseEntity<Object> secured(HttpServletRequest request) throws IOException {
-
-        var filePathString = "files" + request.getRequestURI().substring(5);
-        var filePath = Paths.get(filePathString);
-
-        Stream<Path> filePaths = Files.walk(filePath);
-        Set<FileMetadataDTO> metadata = new java.util.HashSet<>(Set.of());
-        filePaths.forEach(path -> {
-            try {
-                var attrs = Files.readAttributes(path, BasicFileAttributes.class);
-                metadata.add(new FileMetadataDTO(
-                        path.getFileName().toString(),
-                        Files.size(path),
-                        attrs.lastModifiedTime().toMillis(),
-                        Files.isDirectory(path) ? "directory" : "file"  // Type
-                ));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        return ResponseEntity.ok(metadata);
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return new ResponseEntity<>("empty test endpoint", HttpStatus.OK);
     }
 }
