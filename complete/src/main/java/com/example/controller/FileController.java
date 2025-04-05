@@ -1,7 +1,6 @@
 package com.example.controller;
 
 import com.example.dto.FileMetadataDTO;
-import com.example.model.FileMetadata;
 import com.example.service.FileService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +36,12 @@ public class FileController {
     }
 
     // TODO
-//    @GetMapping("/search/{fileName}")
-//    public Iterable<FileMetadata> searchFiles(@PathVariable String fileName) {
-//        // Spaces in URL are "%20". We have to deal with that.
-//        String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
-//        return fileService.searchFiles(decodedFileName);
-//    }
+    @GetMapping("/search/**")
+    public Iterable<FileMetadataDTO> searchFiles(@PathVariable String fileName) {
+        // Spaces in URL are "%20". We have to deal with that.
+        String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
+        return null;
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<String> downloadFile(@PathVariable Long id) throws IOException {
@@ -63,7 +62,7 @@ public class FileController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateFileMetadata(@PathVariable Long id, @RequestBody FileMetadata updatedFile) {
+    public ResponseEntity<String> updateFileMetadata(@PathVariable Long id, @RequestBody FileMetadataDTO updatedFile) {
 //      TODO
         return new ResponseEntity<>("TODO", HttpStatus.NOT_FOUND);
     }

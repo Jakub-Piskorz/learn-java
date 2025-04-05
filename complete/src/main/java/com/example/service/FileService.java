@@ -1,17 +1,16 @@
 package com.example.service;
 
 import com.example.dto.FileMetadataDTO;
-import com.example.model.FileMetadata;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -112,7 +111,11 @@ public class FileService {
 //        return repo.findById(id).orElseThrow();
 //    }
 //
-//    public Iterable<FileMetadata> searchFiles(String fileName) {
-//        return repo.findAllByFileNameLike("%" + fileName + "%");
-//    }
+    public Iterable<FileMetadataDTO> searchFiles(String fileName) {
+        DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+            public boolean accept(Path file) throws IOException {
+                return (Files.size(file) > 8192L);
+            }
+        };
+    }
 }
