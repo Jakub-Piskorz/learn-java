@@ -47,9 +47,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 // Handle invalid token or other errors
                 SecurityContextHolder.clearContext();
+                logger.warn("JWT missing or malformed for request to " + request.getRequestURI());
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             }
         }
-
         filterChain.doFilter(request, response);  // Proceed with the filter chain
     }
 }
