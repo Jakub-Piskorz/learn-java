@@ -4,6 +4,7 @@ import com.example.dto.FileMetadataDTO;
 import com.example.service.FileService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,22 +31,21 @@ public class FileController {
     public ResponseEntity<Set<FileMetadataDTO>> filesInDirectory(HttpServletRequest request) throws IOException {
         // Spaces in URL are "%20". We have to deal with that.
         var directoryString = URLDecoder.decode(request.getRequestURI().substring(8), StandardCharsets.UTF_8);
-        System.out.println(directoryString);
         var files = fileService.filesInDirectory(directoryString);
         return new ResponseEntity<>(files, HttpStatus.OK);
     }
 
-    // TODO
     @GetMapping("/search/**")
-    public Iterable<FileMetadataDTO> searchFiles(@PathVariable String fileName) {
+    public Iterable<FileMetadataDTO> searchFiles(HttpServletRequest request) throws IOException {
         // Spaces in URL are "%20". We have to deal with that.
-        String decodedFileName = URLDecoder.decode(fileName, StandardCharsets.UTF_8);
-        return null;
+        var filePath = URLDecoder.decode(request.getRequestURI().substring(8), StandardCharsets.UTF_8);
+        String decodedFileName = URLDecoder.decode(filePath, StandardCharsets.UTF_8);
+        return fileService.searchFiles(decodedFileName);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<String> downloadFile(@PathVariable Long id) throws IOException {
-        return new ResponseEntity<>(fileService.downloadFile(id), HttpStatus.OK);
+    @GetMapping("/{filePath}")
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String filePath) throws IOException {
+        return fileService.downloadFile(filePath);
     }
 
     @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -61,20 +61,10 @@ public class FileController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<String> updateFileMetadata(@PathVariable Long id, @RequestBody FileMetadataDTO updatedFile) {
-//      TODO
-        return new ResponseEntity<>("TODO", HttpStatus.NOT_FOUND);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> removeFile(@PathVariable Long id) throws Exception {
-        boolean isFileDeleted = fileService.delete(id);
-        if (isFileDeleted) {
-            return new ResponseEntity<>("Successfully deleted file.", HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>("File not found.", HttpStatus.NOT_FOUND);
-        }
+    @DeleteMapping("/{filePath}")
+    public ResponseEntity<String> removeFile(@PathVariable String filePath) throws Exception {
+        fileService.delete(filePath);
+        return new ResponseEntity<>("Successfully deleted file.", HttpStatus.OK);
     }
 //
 }
