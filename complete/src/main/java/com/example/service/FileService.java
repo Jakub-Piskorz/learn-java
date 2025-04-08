@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 @Service
 public class FileService {
 
-    private static final String FILES_ROOT = "files/";
+    public static final String FILES_ROOT = "files/";
 
     // Private helper functions
 
@@ -74,7 +74,7 @@ public class FileService {
     }
 
     public Set<FileMetadataDTO> filesInDirectory(String directory) throws IOException {
-        var path = Paths.get(directory);
+        var path = Paths.get(FILES_ROOT + directory);
 
         Stream<Path> filePaths = Files.walk(path);
         return getFilesMetadata(filePaths);

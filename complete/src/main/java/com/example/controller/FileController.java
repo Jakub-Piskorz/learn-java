@@ -22,6 +22,9 @@ public class FileController {
 
     @Autowired
     private final FileService fileService;
+    private String decodeURL(HttpServletRequest request, int substring) {
+        return URLDecoder.decode(request.getRequestURI().substring(substring), StandardCharsets.UTF_8);
+    }
 
     public FileController(FileService fileService) {
         this.fileService = fileService;
@@ -29,30 +32,27 @@ public class FileController {
 
     @GetMapping("/**")
     public ResponseEntity<Set<FileMetadataDTO>> filesInDirectory(HttpServletRequest request) throws IOException {
-        // Spaces in URL are "%20". We have to deal with that.
-        var directoryString = URLDecoder.decode(request.getRequestURI().substring(8), StandardCharsets.UTF_8);
-        var files = fileService.filesInDirectory(directoryString);
+        var path = decodeURL(request, 14);
+        var files = fileService.filesInDirectory(path);
         return new ResponseEntity<>(files, HttpStatus.OK);
     }
 
     @GetMapping("/search/**")
     public Iterable<FileMetadataDTO> searchFiles(HttpServletRequest request) throws IOException {
-        // Spaces in URL are "%20". We have to deal with that.
-        var filePath = URLDecoder.decode(request.getRequestURI().substring(8), StandardCharsets.UTF_8);
-        String decodedFileName = URLDecoder.decode(filePath, StandardCharsets.UTF_8);
-        return fileService.searchFiles(decodedFileName);
+        var path = decodeURL(request, 21);
+        return fileService.searchFiles(path);
     }
 
-    @GetMapping("/{filePath}")
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String filePath) throws IOException {
-        return fileService.downloadFile(filePath);
+    @GetMapping("/download/**")
+    public ResponseEntity<InputStreamResource> downloadFile(HttpServletRequest request) throws IOException {
+        var path = decodeURL(request, 23);
+        return fileService.downloadFile(path);
     }
 
     @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadFile(
             @RequestPart(value = "file") MultipartFile file,
             @RequestPart(value = "filePath", required = false) String filePath) throws IOException {
-        System.out.println(filePath);
         boolean success = fileService.uploadFile(file, filePath);
         if (success) {
             return new ResponseEntity<>("Successfully uploaded file.", HttpStatus.OK);
@@ -61,8 +61,9 @@ public class FileController {
         }
     }
 
-    @DeleteMapping("/{filePath}")
-    public ResponseEntity<String> removeFile(@PathVariable String filePath) throws Exception {
+    @DeleteMapping("/**")
+    public ResponseEntity<String> removeFile(HttpServletRequest request) throws Exception {
+        var filePath = decodeURL(request, 14);
         fileService.delete(filePath);
         return new ResponseEntity<>("Successfully deleted file.", HttpStatus.OK);
     }
