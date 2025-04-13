@@ -1,6 +1,8 @@
 package com.example.service;
 
 import com.example.dto.FileMetadataDTO;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -10,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,7 +27,7 @@ import java.util.stream.Stream;
 public class FileService {
 
     public static final String FILES_ROOT = "files/";
-
+    protected final Log logger = LogFactory.getLog(getClass());
     // Private helper functions
 
     private FileMetadataDTO getFileMetadata(Path path) throws IOException {
@@ -43,6 +47,19 @@ public class FileService {
                 throw new RuntimeException(e);
             }
         }).collect(Collectors.toSet());
+    }
+    private String getFileExtension(String fileName) {
+        int i = fileName.lastIndexOf('.');
+        return (i > 0) ? fileName.substring(i + 1) : "";
+    }
+    private String getContentTypeFromExtension(String extension) {
+        return switch (extension.toLowerCase()) {
+            case "pdf" -> "application/pdf";
+            case "jpg" -> "image/jpeg";
+            case "png" -> "image/png";
+            case "txt" -> "text/plain";
+            default -> "application/octet-stream";
+        };
     }
 
     // Public services
@@ -91,12 +108,16 @@ public class FileService {
         InputStreamResource resource = new InputStreamResource(inputStream);
 
         String contentType = Files.probeContentType(filePath);
+        if (contentType == null) {
+            String fileExtension = getFileExtension(filePath.getFileName().toString());
+            contentType = getContentTypeFromExtension(fileExtension);
+        }
         contentType = contentType != null ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
         // Building headers for HTTP response
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, contentType);
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filePath.getFileName() + "\"");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(filePath.getFileName().toString(), StandardCharsets.UTF_8) + "\"");
         headers.add(HttpHeaders.PRAGMA, "no-cache");
         headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
         headers.add(HttpHeaders.EXPIRES, "0");
@@ -114,7 +135,8 @@ public class FileService {
 
     public Iterable<FileMetadataDTO> searchFiles(String searchString, String directory) throws IOException {
         Stream<Path> walkStream = Files.walk(Paths.get(FILES_ROOT + directory));
-        Stream<Path> filteredWalkStream = walkStream.filter(f -> f.getFileName().toString().contains(searchString));
+        // Skip(1), because it starts the list with itself (directory)
+        Stream<Path> filteredWalkStream = walkStream.skip(1).filter(f -> f.getFileName().toString().contains(searchString));
         return getFilesMetadata(filteredWalkStream);
     }
 
