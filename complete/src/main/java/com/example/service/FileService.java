@@ -36,7 +36,8 @@ public class FileService {
                 path.getFileName().toString(),
                 Files.size(path),
                 attrs.lastModifiedTime().toMillis(),
-                Files.isDirectory(path) ? "directory" : "file"  // Type
+                Files.isDirectory(path) ? "directory" : "file",  // Type
+                path.toString()
         );
     }
     private Set<FileMetadataDTO> getFilesMetadata(Stream<Path> pathStream) {
@@ -112,7 +113,6 @@ public class FileService {
             String fileExtension = getFileExtension(filePath.getFileName().toString());
             contentType = getContentTypeFromExtension(fileExtension);
         }
-        contentType = contentType != null ? contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
         // Building headers for HTTP response
         HttpHeaders headers = new HttpHeaders();
