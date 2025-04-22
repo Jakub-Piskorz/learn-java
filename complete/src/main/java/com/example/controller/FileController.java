@@ -17,42 +17,45 @@ import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 @RestController
-@RequestMapping("/api/v1/files")
+@RequestMapping(FileService.FILES_ENDPOINT)
 public class FileController {
+
+    private String path;
 
     @Autowired
     private final FileService fileService;
-    private String decodeURL(HttpServletRequest request, int substring) {
-        return URLDecoder.decode(request.getRequestURI().substring(substring), StandardCharsets.UTF_8);
+
+    private String decodeURL(HttpServletRequest request) {
+        return URLDecoder.decode(request.getRequestURI().substring((FileService.FILES_ENDPOINT + path).length()), StandardCharsets.UTF_8);
     }
 
     public FileController(FileService fileService) {
         this.fileService = fileService;
     }
 
-    @GetMapping("/**")
+    @GetMapping(path = "/**")
     public ResponseEntity<Set<FileMetadataDTO>> filesInDirectory(HttpServletRequest request) throws IOException {
-        var path = decodeURL(request, 14);
+        var path = decodeURL(request);
         var files = fileService.filesInDirectory(path);
         return new ResponseEntity<>(files, HttpStatus.OK);
     }
 
-    @GetMapping("/search/**")
+    @GetMapping(path = "/search/**")
     public Iterable<FileMetadataDTO> searchFiles(HttpServletRequest request) throws IOException {
-        var path = decodeURL(request, 21);
+        var path = decodeURL(request);
         return fileService.searchFiles(path);
     }
 
-    @GetMapping("/download/**")
+    @GetMapping(path = "/download/**")
     public ResponseEntity<InputStreamResource> downloadFile(HttpServletRequest request) throws IOException {
-        var path = decodeURL(request, 23);
+        var path = decodeURL(request);
         return fileService.downloadFile(path);
     }
 
-    @PostMapping(value = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(path = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadFile(
-            @RequestPart(value = "file") MultipartFile file,
-            @RequestPart(value = "filePath", required = false) String filePath) throws IOException {
+            @RequestPart("file") MultipartFile file,
+            @RequestPart("filePath") String filePath) throws IOException {
         boolean success = fileService.uploadFile(file, filePath);
         if (success) {
             return new ResponseEntity<>("Successfully uploaded file.", HttpStatus.OK);
@@ -61,9 +64,9 @@ public class FileController {
         }
     }
 
-    @DeleteMapping("/**")
+    @DeleteMapping(path = "/**")
     public ResponseEntity<String> removeFile(HttpServletRequest request) throws Exception {
-        var filePath = decodeURL(request, 14);
+        var filePath = decodeURL(request);
         fileService.delete(filePath);
         return new ResponseEntity<>("Successfully deleted file.", HttpStatus.OK);
     }

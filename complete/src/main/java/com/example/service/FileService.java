@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 @Service
 public class FileService {
 
+    public static final String FILES_ENDPOINT = "/api/v1/files";
     public static final String FILES_ROOT = "files/";
     protected final Log logger = LogFactory.getLog(getClass());
     // Private helper functions
