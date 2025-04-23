@@ -25,8 +25,6 @@ import java.util.stream.Stream;
 
 @Service
 public class FileService {
-
-    public static final String FILES_ENDPOINT = "/api/v1/files";
     public static final String FILES_ROOT = "files/";
     protected final Log logger = LogFactory.getLog(getClass());
     // Private helper functions
@@ -95,8 +93,8 @@ public class FileService {
     public Set<FileMetadataDTO> filesInDirectory(String directory) throws IOException {
         var path = Paths.get(FILES_ROOT + directory);
 
-        Stream<Path> filePaths = Files.walk(path);
-        return getFilesMetadata(filePaths);
+        Stream<Path> walkStream = Files.walk(path).skip(1);
+        return getFilesMetadata(walkStream);
     }
 
     public ResponseEntity<InputStreamResource> downloadFile(String filePathString) throws IOException {
