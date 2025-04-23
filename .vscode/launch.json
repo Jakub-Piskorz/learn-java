@@ -4,7 +4,7 @@
       "type": "java",
       "name": "Application",
       "request": "launch",
-      "mainClass": "com.example.springboot.Application",
+      "mainClass": "com.fastfile.springboot.Application",
       "projectName": "spring-boot-complete"
     },
     {
@@ -12,7 +12,7 @@
       "name": "Spring Boot-Application<spring-boot-initial>",
       "request": "launch",
       "cwd": "${workspaceFolder}",
-      "mainClass": "com.example.springboot.Application",
+      "mainClass": "com.fastfile.springboot.Application",
       "projectName": "spring-boot-initial",
       "args": "",
       "envFile": "${workspaceFolder}/.env",

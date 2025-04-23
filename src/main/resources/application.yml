@@ -1,0 +1,34 @@
+spring:
+  application:
+    name:
+      fastfile-be
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mydatabase
+    username: ${var_dbUsername}
+    password: ${var_dbPassword}
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 5
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database: postgresql
+
+server:
+  port: 8080
+  address: 0.0.0.0
+  ssl:
+    key-store: classpath:keystore.jks
+    key-store-password: ${var_keystorePass}
+    key-alias: jakubpiskorzSSL
+    enabled: true
+    key-store-type: JKS
+
+
+
+management:
+  endpoints.web.exposure.include: "*"
+  endpoint.health.show-details: always
+

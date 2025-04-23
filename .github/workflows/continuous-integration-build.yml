@@ -33,9 +33,5 @@ jobs:
         run: ./gradlew build
 
       - name: Build Complete with Maven
-        working-directory: ./complete
+        working-directory: ./
         run: ./mvnw --batch-mode clean package
-
-      - name: Build Complete with Gradle
-        working-directory: ./complete
-        run: ./gradlew build
