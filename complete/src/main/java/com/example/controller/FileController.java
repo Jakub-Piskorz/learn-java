@@ -25,7 +25,6 @@ public class FileController {
     private final FileService fileService;
 
     private String decodeURL(HttpServletRequest request, String path) {
-        System.out.println(request.getRequestURI().substring((FILES_ENDPOINT + path).length()));
         return URLDecoder.decode(request.getRequestURI().substring((FILES_ENDPOINT + path).length()), StandardCharsets.UTF_8);
     }
 
@@ -33,26 +32,26 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    @GetMapping(path = "/**")
+    @GetMapping("/list/**")
     public ResponseEntity<Set<FileMetadataDTO>> filesInDirectory(HttpServletRequest request) throws IOException {
-        var path = decodeURL(request, "/");
+        var path = decodeURL(request, "/list/");
         var files = fileService.filesInDirectory(path);
         return new ResponseEntity<>(files, HttpStatus.OK);
     }
 
-    @GetMapping(path = "/search/**")
+    @GetMapping("/search/**")
     public Iterable<FileMetadataDTO> searchFiles(HttpServletRequest request) throws IOException {
         var path = decodeURL(request, "/search/");
         return fileService.searchFiles(path);
     }
 
-    @GetMapping(path = "/download/**")
+    @GetMapping("/download/**")
     public ResponseEntity<InputStreamResource> downloadFile(HttpServletRequest request) throws IOException {
         var path = decodeURL(request, "/download/");
         return fileService.downloadFile(path);
     }
 
-    @PostMapping(path = "/", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadFile(
             @RequestPart("file") MultipartFile file,
             @RequestPart("filePath") String filePath) throws IOException {
@@ -61,15 +60,25 @@ public class FileController {
         if (success) {
             return new ResponseEntity<>("Successfully uploaded file.", HttpStatus.OK);
         } else {
-            return new ResponseEntity<>("Something went wrong.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Couldn't upload file", HttpStatus.BAD_REQUEST);
         }
     }
 
-    @DeleteMapping(path = "/**")
+    @DeleteMapping( "/delete/**")
     public ResponseEntity<String> removeFile(HttpServletRequest request) throws Exception {
-        var filePath = decodeURL(request, "/");
+        var filePath = decodeURL(request, "/delete/");
         fileService.delete(filePath);
         return new ResponseEntity<>("Successfully deleted file.", HttpStatus.OK);
     }
-//
+
+    @GetMapping("/create-directory/**")
+    public ResponseEntity<String> createDirectory(HttpServletRequest request) throws Exception {
+        var filePath = decodeURL(request, "/create-directory/");
+        boolean result = fileService.createDirectory(filePath);
+        if (result) {
+            return new ResponseEntity<>("Successfully created directory.", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Couldn't create directory.", HttpStatus.BAD_REQUEST);
+        }
+    }
 }

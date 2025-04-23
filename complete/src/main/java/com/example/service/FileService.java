@@ -78,7 +78,7 @@ public class FileService {
         Path path = Paths.get(FILES_ROOT + filePath).normalize();
         Path pathWithFile = Paths.get(FILES_ROOT + filePath).resolve(Objects.requireNonNull(file.getOriginalFilename()));
 
-//         Check if path exists
+        // Check if path exists
         if (!Files.exists(path)) {
             Files.createDirectories(path);
         }
@@ -141,5 +141,14 @@ public class FileService {
 
     public Iterable<FileMetadataDTO> searchFiles(String searchString) throws IOException {
         return searchFiles(searchString, "");
+    }
+
+    public boolean createDirectory(String path) throws IOException {
+        if (path != null && !Files.exists(Paths.get(FILES_ROOT + path))) {
+            Files.createDirectories(Paths.get(FILES_ROOT + path));
+            return true;
+        } else {
+            return false;
+        }
     }
 }
