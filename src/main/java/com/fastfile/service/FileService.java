@@ -1,6 +1,7 @@
 package com.fastfile.service;
 
 import com.fastfile.dto.FileMetadataDTO;
+import com.fastfile.dto.SearchFileDTO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.InputStreamResource;
@@ -39,6 +40,7 @@ public class FileService {
                 path.toString()
         );
     }
+
     private Set<FileMetadataDTO> getFilesMetadata(Stream<Path> pathStream) {
         return pathStream.map(_path -> {
             try {
@@ -48,10 +50,12 @@ public class FileService {
             }
         }).collect(Collectors.toSet());
     }
+
     private String getFileExtension(String fileName) {
         int i = fileName.lastIndexOf('.');
         return (i > 0) ? fileName.substring(i + 1) : "";
     }
+
     private String getContentTypeFromExtension(String extension) {
         return switch (extension.toLowerCase()) {
             case "pdf" -> "application/pdf";
@@ -116,7 +120,7 @@ public class FileService {
         // Building headers for HTTP response
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_TYPE, contentType);
-        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(filePath.getFileName().toString(), StandardCharsets.UTF_8) + "\"");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=\"" + URLEncoder.encode(filePath.getFileName().toString(), StandardCharsets.UTF_8) + "\"");
         headers.add(HttpHeaders.PRAGMA, "no-cache");
         headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
         headers.add(HttpHeaders.EXPIRES, "0");
@@ -132,15 +136,15 @@ public class FileService {
         Files.delete(path);
     }
 
-    public Iterable<FileMetadataDTO> searchFiles(String searchString, String directory) throws IOException {
-        Stream<Path> walkStream = Files.walk(Paths.get(FILES_ROOT + directory));
+    public Iterable<FileMetadataDTO> searchFiles(SearchFileDTO searchFile) throws IOException {
+        if (searchFile.getFileName() == null || searchFile.getFileName().isEmpty()) {
+            throw new IllegalArgumentException("File name is empty");
+        }
+        if (searchFile.getDirectory() == null) searchFile.setDirectory("");
+        Stream<Path> walkStream = Files.walk(Paths.get(FILES_ROOT + searchFile.getDirectory()));
         // Skip(1), because it starts the list with itself (directory)
-        Stream<Path> filteredWalkStream = walkStream.skip(1).filter(f -> f.getFileName().toString().contains(searchString));
+        Stream<Path> filteredWalkStream = walkStream.skip(1).filter(f -> f.getFileName().toString().contains(searchFile.getFileName()));
         return getFilesMetadata(filteredWalkStream);
-    }
-
-    public Iterable<FileMetadataDTO> searchFiles(String searchString) throws IOException {
-        return searchFiles(searchString, "");
     }
 
     public boolean createDirectory(String path) throws IOException {

@@ -1,6 +1,7 @@
 package com.fastfile.controller;
 
 import com.fastfile.dto.FileMetadataDTO;
+import com.fastfile.dto.SearchFileDTO;
 import com.fastfile.service.FileService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,10 +40,9 @@ public class FileController {
         return new ResponseEntity<>(files, HttpStatus.OK);
     }
 
-    @GetMapping("/search/**")
-    public Iterable<FileMetadataDTO> searchFiles(HttpServletRequest request) throws IOException {
-        var path = decodeURL(request, "/search/");
-        return fileService.searchFiles(path);
+    @PostMapping("/search")
+    public Iterable<FileMetadataDTO> searchFiles(@RequestBody SearchFileDTO searchFile) throws IOException {
+        return fileService.searchFiles(searchFile);
     }
 
     @GetMapping("/download/**")
