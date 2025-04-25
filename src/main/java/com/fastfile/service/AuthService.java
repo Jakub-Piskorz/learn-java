@@ -36,7 +36,7 @@ public class AuthService {
         }
 
         // Generate token if valid
-        return jwtService.generateToken(user.getUsername());
+        return jwtService.generateToken(user.getUsername(), user.getId());
     }
 
     public UserDTO getCurrentUser(String token) {
