@@ -2,8 +2,6 @@ package com.fastfile.service;
 
 import com.fastfile.dto.FileMetadataDTO;
 import com.fastfile.dto.SearchFileDTO;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,8 +25,6 @@ import java.util.stream.Stream;
 @Service
 public class FileService {
     public static final String FILES_ROOT = "files/";
-    protected final Log logger = LogFactory.getLog(getClass());
-    // Private helper functions
 
     private FileMetadataDTO getFileMetadata(Path path) throws IOException {
         var attrs = Files.readAttributes(path, BasicFileAttributes.class);

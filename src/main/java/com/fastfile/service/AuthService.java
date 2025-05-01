@@ -1,9 +1,9 @@
 package com.fastfile.service;
 
-import com.fastfile.dto.UserDTO;
 import com.fastfile.model.User;
 import com.fastfile.repository.UserRepository;
 import com.fastfile.auth.JwtService;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,17 +36,20 @@ public class AuthService {
         }
 
         // Generate token if valid
-        return jwtService.generateToken(user.getUsername(), user.getId());
+        return jwtService.generateToken(user);
     }
 
-    public UserDTO getCurrentUser(String token) {
+    public User getCurrentUser(String token) {
         token = token.substring(7); // Remove "Bearer "
-        String username = jwtService.validateToken(token);
-        Optional<User> optUser = userRepository.findByUsername(username);
+        Claims claims = jwtService.extractClaims(token);
+        String userName = claims.getSubject();
+        Optional<User> optUser = userRepository.findByUsername(userName);
         if (optUser.isEmpty()) {
             throw new RuntimeException("User not found");
         }
         User user = optUser.get();
-        return new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getFirstName(), user.getLastName());
+        System.out.println("userId");
+        System.out.println(user.getId());
+        return user;
     }
 }
