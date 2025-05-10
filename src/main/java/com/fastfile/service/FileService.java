@@ -2,10 +2,13 @@ package com.fastfile.service;
 
 import com.fastfile.dto.FileMetadataDTO;
 import com.fastfile.dto.SearchFileDTO;
+import io.jsonwebtoken.Claims;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -62,6 +65,17 @@ public class FileService {
         };
     }
 
+    private Path getUserPath(String directory) {
+        if (directory == null) directory = "";
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Claims claims = (Claims) auth.getDetails();
+        String userId = String.valueOf(claims.get("userId"));
+        return Paths.get(FILES_ROOT + userId + "/" + directory);
+    }
+    private Path getUserPath() {
+        return getUserPath(null);
+    }
+
     // Public services
 
     public boolean uploadFile(MultipartFile file, String filePath) throws IOException {
@@ -75,8 +89,8 @@ public class FileService {
             filePath = "";
         }
 
-        Path path = Paths.get(FILES_ROOT + filePath).normalize();
-        Path pathWithFile = Paths.get(FILES_ROOT + filePath).resolve(Objects.requireNonNull(file.getOriginalFilename()));
+        Path path = getUserPath(filePath).normalize();
+        Path pathWithFile = getUserPath(filePath).resolve(Objects.requireNonNull(file.getOriginalFilename()));
 
         // Check if path exists
         if (!Files.exists(path)) {
@@ -91,14 +105,14 @@ public class FileService {
     }
 
     public Set<FileMetadataDTO> filesInDirectory(String directory) throws IOException {
-        var path = Paths.get(FILES_ROOT + directory);
+        Path path = getUserPath(directory);
 
         Stream<Path> walkStream = Files.walk(path).skip(1);
         return getFilesMetadata(walkStream);
     }
 
-    public ResponseEntity<InputStreamResource> downloadFile(String filePathString) throws IOException {
-        Path filePath = Paths.get(FILES_ROOT + filePathString);
+    public ResponseEntity<InputStreamResource> downloadFile(String directory) throws IOException {
+        Path filePath = getUserPath(directory);
 
         if (!Files.exists(filePath)) {
             return ResponseEntity.notFound().build();
@@ -128,7 +142,7 @@ public class FileService {
     }
 
     public void delete(String filePath) throws IOException, NullPointerException {
-        Path path = Paths.get(FILES_ROOT + filePath).normalize();
+        Path path = getUserPath(filePath).normalize();
         Files.delete(path);
     }
 
@@ -137,15 +151,15 @@ public class FileService {
             throw new IllegalArgumentException("File name is empty");
         }
         if (searchFile.getDirectory() == null) searchFile.setDirectory("");
-        Stream<Path> walkStream = Files.walk(Paths.get(FILES_ROOT + searchFile.getDirectory()));
+        Stream<Path> walkStream = Files.walk(getUserPath(searchFile.getDirectory()));
         // Skip(1), because it starts the list with itself (directory)
         Stream<Path> filteredWalkStream = walkStream.skip(1).filter(f -> f.getFileName().toString().contains(searchFile.getFileName()));
         return getFilesMetadata(filteredWalkStream);
     }
 
     public boolean createDirectory(String path) throws IOException {
-        if (path != null && !Files.exists(Paths.get(FILES_ROOT + path))) {
-            Files.createDirectories(Paths.get(FILES_ROOT + path));
+        if (path != null && !Files.exists(getUserPath(path))) {
+            Files.createDirectories(getUserPath(path));
             return true;
         } else {
             return false;

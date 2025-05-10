@@ -64,7 +64,7 @@ public class FileController {
         }
     }
 
-    @DeleteMapping( "/delete/**")
+    @DeleteMapping("/delete/**")
     public ResponseEntity<String> removeFile(HttpServletRequest request) throws Exception {
         var filePath = decodeURL(request, "/delete/");
         fileService.delete(filePath);

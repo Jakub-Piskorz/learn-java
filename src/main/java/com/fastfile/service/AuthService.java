@@ -3,7 +3,6 @@ package com.fastfile.service;
 import com.fastfile.model.User;
 import com.fastfile.repository.UserRepository;
 import com.fastfile.auth.JwtService;
-import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,16 +39,13 @@ public class AuthService {
     }
 
     public User getCurrentUser(String token) {
-        token = token.substring(7); // Remove "Bearer "
-        Claims claims = jwtService.extractClaims(token);
-        String userName = claims.getSubject();
-        Optional<User> optUser = userRepository.findByUsername(userName);
-        if (optUser.isEmpty()) {
-            throw new RuntimeException("User not found");
-        }
-        User user = optUser.get();
-        System.out.println("userId");
-        System.out.println(user.getId());
-        return user;
+            token = token.substring(7); // Remove "Bearer "
+            String username = jwtService.extractUsername(token);
+            Optional<User> optUser = userRepository.findByUsername(username);
+            if (optUser.isPresent()) {
+                return optUser.get();
+            } else {
+                throw new RuntimeException("User not found");
+            }
     }
 }
