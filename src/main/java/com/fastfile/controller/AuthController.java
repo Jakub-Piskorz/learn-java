@@ -1,5 +1,6 @@
 package com.fastfile.controller;
 
+import com.fastfile.dto.UserDTO;
 import com.fastfile.model.UserLogin;
 
 import com.fastfile.model.User;
@@ -28,7 +29,7 @@ public class AuthController {
         return authService.authenticate(user.getLogin(), user.getPassword());
     }
     @GetMapping("/user")
-    public User getCurrentUser(@RequestHeader(value="Authorization") String authToken) {
+    public UserDTO getCurrentUser(@RequestHeader(value="Authorization") String authToken) {
         return authService.getCurrentUser(authToken);
     }
 }
