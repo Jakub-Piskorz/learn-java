@@ -13,7 +13,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -71,6 +70,19 @@ public class FileService {
 
     private Path getUserPath(String directory) {
         if (directory == null) directory = "";
+
+        // 🔒 Safety check against unsafe paths.
+        Path path = Paths.get(directory);
+        if (directory.contains("\u0000") || path.isAbsolute()) {
+            throw new IllegalArgumentException("Unsafe path");
+        }
+        Path normalized = path.normalize();
+        for (Path part : normalized) {
+            if (part.toString().equals("..")) {
+                throw new IllegalArgumentException("Unsafe path");
+            }
+        }
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Claims claims = (Claims) auth.getDetails();
         String userId = String.valueOf(claims.get("userId"));
@@ -182,11 +194,10 @@ public class FileService {
     @SneakyThrows
     public boolean deleteRecursively(String directory) {
         Path baseDir = getUserPath().toAbsolutePath();
-        Path target = getUserPath(directory).toAbsolutePath();
-        if (!target.startsWith(baseDir) || target.equals(baseDir)) {
+        Path path = getUserPath(directory);
+        if (path.toAbsolutePath().equals(baseDir)) {
             return false;
         }
-        Path path = getUserPath(directory);
         try (Stream<Path> walkStream = Files.walk(path)) {
             walkStream.sorted(Comparator.reverseOrder()).forEach(p -> {
                 try {
