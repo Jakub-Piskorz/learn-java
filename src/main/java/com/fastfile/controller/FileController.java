@@ -71,6 +71,17 @@ public class FileController {
         return new ResponseEntity<>("Successfully deleted file.", HttpStatus.OK);
     }
 
+    @DeleteMapping("/delete-recursively/**")
+    public ResponseEntity<String> deleteRecursively(HttpServletRequest request) throws Exception {
+        var filePath = decodeURL(request, "/delete-recursively/");
+        boolean result = fileService.deleteRecursively(filePath);
+        if (result) {
+            return new ResponseEntity<>("Successfully deleted file or folder.", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Couldn't deleted file or folder.", HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @GetMapping("/create-directory/**")
     public ResponseEntity<String> createDirectory(HttpServletRequest request) throws Exception {
         var filePath = decodeURL(request, "/create-directory/");

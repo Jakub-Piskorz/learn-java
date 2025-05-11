@@ -3,6 +3,7 @@ package com.fastfile.service;
 import com.fastfile.dto.FileMetadataDTO;
 import com.fastfile.dto.SearchFileDTO;
 import io.jsonwebtoken.Claims;
+import lombok.SneakyThrows;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -12,14 +13,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -72,6 +76,7 @@ public class FileService {
         String userId = String.valueOf(claims.get("userId"));
         return Paths.get(FILES_ROOT + userId + "/" + directory);
     }
+
     private Path getUserPath() {
         return getUserPath(null);
     }
@@ -104,11 +109,17 @@ public class FileService {
         return true;
     }
 
-    public Set<FileMetadataDTO> filesInDirectory(String directory) throws IOException {
+    public Set<FileMetadataDTO> filesInDirectory(String directory, int maxDepth) throws IOException {
         Path path = getUserPath(directory);
 
-        Stream<Path> walkStream = Files.walk(path).skip(1);
-        return getFilesMetadata(walkStream);
+        Stream<Path> walkStream = Files.walk(path, maxDepth).skip(1);
+        Set<FileMetadataDTO> filesMetadata = getFilesMetadata(walkStream);
+        walkStream.close();
+        return filesMetadata;
+    }
+
+    public Set<FileMetadataDTO> filesInDirectory(String directory) throws IOException {
+        return filesInDirectory(directory, 1);
     }
 
     public ResponseEntity<InputStreamResource> downloadFile(String directory) throws IOException {
@@ -154,6 +165,7 @@ public class FileService {
         Stream<Path> walkStream = Files.walk(getUserPath(searchFile.getDirectory()));
         // Skip(1), because it starts the list with itself (directory)
         Stream<Path> filteredWalkStream = walkStream.skip(1).filter(f -> f.getFileName().toString().contains(searchFile.getFileName()));
+        walkStream.close();
         return getFilesMetadata(filteredWalkStream);
     }
 
@@ -164,5 +176,27 @@ public class FileService {
         } else {
             return false;
         }
+    }
+
+
+    @SneakyThrows
+    public boolean deleteRecursively(String directory) {
+        Path baseDir = getUserPath().toAbsolutePath();
+        Path target = getUserPath(directory).toAbsolutePath();
+        if (!target.startsWith(baseDir) || target.equals(baseDir)) {
+            return false;
+        }
+        Path path = getUserPath(directory);
+        try (Stream<Path> walkStream = Files.walk(path)) {
+            walkStream.sorted(Comparator.reverseOrder()).forEach(p -> {
+                try {
+                    Files.delete(p);
+                } catch (IOException e) {
+                    // Log or handle the exception if needed
+                    throw new UncheckedIOException(e);
+                }
+            });
+        }
+        return true;
     }
 }
