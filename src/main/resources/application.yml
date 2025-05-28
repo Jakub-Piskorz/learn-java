@@ -32,3 +32,7 @@ management:
   endpoints.web.exposure.include: "*"
   endpoint.health.show-details: always
 
+storage:
+  limits:
+    free: 21474836480     # 20 GB in bytes
+    premium: 107374182400 # 100 GB in bytes

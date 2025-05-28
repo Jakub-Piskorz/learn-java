@@ -4,7 +4,10 @@ import com.fastfile.dto.UserDTO;
 import com.fastfile.model.User;
 import com.fastfile.repository.UserRepository;
 import com.fastfile.auth.JwtService;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -49,5 +52,10 @@ public class AuthService {
             } else {
                 throw new RuntimeException("User not found");
             }
+    }
+    public String getUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Claims claims = (Claims) auth.getDetails();
+        return String.valueOf(claims.get("userId"));
     }
 }

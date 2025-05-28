@@ -2,14 +2,12 @@ package com.fastfile.service;
 
 import com.fastfile.dto.FileMetadataDTO;
 import com.fastfile.dto.SearchFileDTO;
-import io.jsonwebtoken.Claims;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,6 +29,10 @@ import java.util.stream.Stream;
 @Service
 public class FileService {
     public static final String FILES_ROOT = "files/";
+    @Autowired
+    private AuthService authService;
+    @Autowired
+    private UserService userService;
 
     private FileMetadataDTO getFileMetadata(Path path) throws IOException {
         var attrs = Files.readAttributes(path, BasicFileAttributes.class);
@@ -83,14 +85,33 @@ public class FileService {
             }
         }
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Claims claims = (Claims) auth.getDetails();
-        String userId = String.valueOf(claims.get("userId"));
+        String userId = authService.getUserId();
         return Paths.get(FILES_ROOT + userId + "/" + directory);
     }
 
     private Path getUserPath() {
         return getUserPath(null);
+    }
+
+    private long bytesInside(Path path) throws IOException {
+        if (path.toFile().isFile()) {
+            return path.toFile().length();
+        }
+        try (Stream<Path> stream = Files.walk(path)) {
+            return stream.filter(p -> p.toFile().isFile())
+                    .mapToLong(p -> p.toFile().length())
+                    .sum();
+        }
+    }
+
+    private boolean isStorageLimitExceeded(long newFileSize) throws IOException {
+//        TODO: We probably want to store current user's store usage in DB instead of calculating it on demand. It will make uploads quicker.
+        long currentUsage = bytesInside(getUserPath());
+        return (newFileSize + currentUsage) > userService.getUserStorageLimit();
+    }
+
+    private boolean isStorageLimitExceeded() throws IOException {
+        return isStorageLimitExceeded(0);
     }
 
     // Public services
@@ -177,8 +198,9 @@ public class FileService {
         Stream<Path> walkStream = Files.walk(getUserPath(searchFile.getDirectory()));
         // Skip(1), because it starts the list with itself (directory)
         Stream<Path> filteredWalkStream = walkStream.skip(1).filter(f -> f.getFileName().toString().contains(searchFile.getFileName()));
+        var filesMetadata = getFilesMetadata(filteredWalkStream);
         walkStream.close();
-        return getFilesMetadata(filteredWalkStream);
+        return filesMetadata;
     }
 
     public boolean createDirectory(String path) throws IOException {
