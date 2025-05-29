@@ -2,6 +2,7 @@ package com.fastfile.service;
 
 import com.fastfile.dto.FileMetadataDTO;
 import com.fastfile.dto.SearchFileDTO;
+import com.fastfile.repository.UserRepository;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -33,8 +34,10 @@ public class FileService {
     private AuthService authService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private UserRepository userRepository;
 
-    private FileMetadataDTO getFileMetadata(Path path) throws IOException {
+    FileMetadataDTO getFileMetadata(Path path) throws IOException {
         var attrs = Files.readAttributes(path, BasicFileAttributes.class);
         return new FileMetadataDTO(
                 path.getFileName().toString(),
@@ -45,7 +48,7 @@ public class FileService {
         );
     }
 
-    private Set<FileMetadataDTO> getFilesMetadata(Stream<Path> pathStream) {
+    Set<FileMetadataDTO> getFilesMetadata(Stream<Path> pathStream) {
         return pathStream.map(_path -> {
             try {
                 return getFileMetadata(_path);
@@ -55,12 +58,12 @@ public class FileService {
         }).collect(Collectors.toSet());
     }
 
-    private String getFileExtension(String fileName) {
+    String getFileExtension(String fileName) {
         int i = fileName.lastIndexOf('.');
         return (i > 0) ? fileName.substring(i + 1) : "";
     }
 
-    private String getContentTypeFromExtension(String extension) {
+    String getContentTypeFromExtension(String extension) {
         return switch (extension.toLowerCase()) {
             case "pdf" -> "application/pdf";
             case "jpg" -> "image/jpeg";
@@ -70,7 +73,7 @@ public class FileService {
         };
     }
 
-    private Path getUserPath(String directory) {
+    Path getUserPath(String directory) {
         if (directory == null) directory = "";
 
         // 🔒 Safety check against unsafe paths.
@@ -89,11 +92,11 @@ public class FileService {
         return Paths.get(FILES_ROOT + userId + "/" + directory);
     }
 
-    private Path getUserPath() {
+    Path getUserPath() {
         return getUserPath(null);
     }
 
-    private long bytesInside(Path path) throws IOException {
+    long bytesInside(Path path) throws IOException {
         if (path.toFile().isFile()) {
             return path.toFile().length();
         }
@@ -104,22 +107,34 @@ public class FileService {
         }
     }
 
-    private boolean isStorageLimitExceeded(long newFileSize) throws IOException {
-//        TODO: We probably want to store current user's store usage in DB instead of calculating it on demand. It will make uploads quicker.
-        long currentUsage = bytesInside(getUserPath());
-        return (newFileSize + currentUsage) > userService.getUserStorageLimit();
+    boolean isStorageLimitExceeded(long newFileSize) {
+        long currentUsage = userService.getUserStorage();
+        return (currentUsage + newFileSize) > userService.getUserStorageLimit();
     }
 
-    private boolean isStorageLimitExceeded() throws IOException {
+    boolean isStorageLimitExceeded() {
         return isStorageLimitExceeded(0);
     }
 
-    // Public services
+    public long updateUserStorage() throws IOException {
+        var userId = authService.getUserId();
+        var user = userRepository.findById(Long.parseLong(userId)).get();
+        long currentUsage = bytesInside(getUserPath());
+        user.setUsedStorage(currentUsage);
+        return userRepository.save(user).getUsedStorage();
+    }
+
+    // Endpoint services
 
     public boolean uploadFile(MultipartFile file, String filePath) throws IOException {
 
         if (file == null || file.isEmpty()) {
             System.out.println("File doesn't exist.");
+            return false;
+        }
+
+        if (isStorageLimitExceeded(file.getSize())) {
+            System.out.println("Storage limit exceeded.");
             return false;
         }
 
@@ -139,6 +154,8 @@ public class FileService {
             return false;
         }
         Files.copy(file.getInputStream(), pathWithFile);
+
+        updateUserStorage();
         return true;
     }
 
@@ -188,6 +205,7 @@ public class FileService {
     public void delete(String filePath) throws IOException, NullPointerException {
         Path path = getUserPath(filePath).normalize();
         Files.delete(path);
+        updateUserStorage();
     }
 
     public Iterable<FileMetadataDTO> searchFiles(SearchFileDTO searchFile) throws IOException {
@@ -230,6 +248,8 @@ public class FileService {
                 }
             });
         }
+
+        updateUserStorage();
         return true;
     }
 }

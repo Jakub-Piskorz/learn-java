@@ -2,7 +2,6 @@ package com.fastfile.config;
 
 import com.fastfile.auth.JwtAuthenticationFilter;
 import com.fastfile.auth.JwtService;
-import com.fastfile.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,8 +19,6 @@ public class SecurityConfig {
 
     @Autowired
     private JwtService jwtService;
-    @Autowired
-    private UserRepository userRepo;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -34,7 +31,8 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((a) -> a
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/register").permitAll()
+                        .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/").permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/test/**")).permitAll()
                         .anyRequest()

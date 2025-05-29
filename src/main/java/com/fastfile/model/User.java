@@ -34,8 +34,10 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    private String userType = "free";
+    private Long usedStorage = 0L;
+
     // No-arguments constructor for Hibernate
     public User() {
     }
-
 }

@@ -1,6 +1,5 @@
 package com.fastfile.service;
 
-import com.fastfile.dto.UserDTO;
 import com.fastfile.model.User;
 import com.fastfile.repository.UserRepository;
 import com.fastfile.auth.JwtService;
@@ -42,17 +41,6 @@ public class AuthService {
         return jwtService.generateToken(user);
     }
 
-    public UserDTO getCurrentUser(String token) {
-            token = token.substring(7); // Remove "Bearer "
-            String username = jwtService.extractUsername(token);
-            Optional<User> optUser = userRepository.findByUsername(username);
-            if (optUser.isPresent()) {
-                User user = optUser.get();
-                return new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getFirstName(), user.getLastName());
-            } else {
-                throw new RuntimeException("User not found");
-            }
-    }
     public String getUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         Claims claims = (Claims) auth.getDetails();

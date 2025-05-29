@@ -33,11 +33,12 @@ FastFile is a Spring Boot-based cloud file storage backend that supports file up
 
 ### 🔐 Auth
 
-| Method | Endpoint         | Description                  |
-|--------|------------------|------------------------------|
-| POST   | `/auth/register` | Register a new user          |
-| POST   | `/auth/login`    | Authenticate and receive JWT |
-| GET    | `/auth/user`     | Get current user by token    |
+| Method | Endpoint                   | Description                         |
+|--------|----------------------------|-------------------------------------|
+| POST   | `/auth/register`           | Register a new user                 |
+| POST   | `/auth/login`              | Authenticate and receive JWT        |
+| GET    | `/auth/user`               | Get current user by token           |
+| POST   | `/auth/user/set-user-type` | Set user type to "free" or "premium"|
 
 ### 📁 File Operations
 
