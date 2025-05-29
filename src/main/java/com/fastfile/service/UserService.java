@@ -55,8 +55,7 @@ public class UserService {
     }
 
     public long getUserStorage() {
-        var userId = authService.getUserId();
-        var user = userRepository.findById(Long.parseLong(userId)).orElse(null);
+        User user = getCurrentUser();
 
         if (user == null) {
             throw new RuntimeException("User not found");
