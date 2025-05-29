@@ -4,7 +4,6 @@ import com.fastfile.dto.FileMetadataDTO;
 import com.fastfile.dto.SearchFileDTO;
 import com.fastfile.service.FileService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,15 +21,14 @@ import java.util.Set;
 public class FileController {
     public final String FILES_ENDPOINT = "/api/v1/files";
 
-    @Autowired
     private final FileService fileService;
-
-    private String decodeURL(HttpServletRequest request, String path) {
-        return URLDecoder.decode(request.getRequestURI().substring((FILES_ENDPOINT + path).length()), StandardCharsets.UTF_8);
-    }
 
     public FileController(FileService fileService) {
         this.fileService = fileService;
+    }
+
+    private String decodeURL(HttpServletRequest request, String path) {
+        return URLDecoder.decode(request.getRequestURI().substring((FILES_ENDPOINT + path).length()), StandardCharsets.UTF_8);
     }
 
     @GetMapping("/list/**")
@@ -72,7 +70,7 @@ public class FileController {
     }
 
     @DeleteMapping("/delete-recursively/**")
-    public ResponseEntity<String> deleteRecursively(HttpServletRequest request) throws Exception {
+    public ResponseEntity<String> deleteRecursively(HttpServletRequest request) {
         var filePath = decodeURL(request, "/delete-recursively/");
         boolean result = fileService.deleteRecursively(filePath);
         if (result) {

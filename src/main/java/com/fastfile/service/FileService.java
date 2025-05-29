@@ -4,7 +4,6 @@ import com.fastfile.dto.FileMetadataDTO;
 import com.fastfile.dto.SearchFileDTO;
 import com.fastfile.repository.UserRepository;
 import lombok.SneakyThrows;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -30,12 +29,16 @@ import java.util.stream.Stream;
 @Service
 public class FileService {
     public static final String FILES_ROOT = "files/";
-    @Autowired
-    private AuthService authService;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private UserRepository userRepository;
+
+    private final AuthService authService;
+    private final UserService userService;
+    private final UserRepository userRepository;
+
+    public FileService(AuthService authService, UserService userService, UserRepository userRepository) {
+        this.authService = authService;
+        this.userService = userService;
+        this.userRepository = userRepository;
+    }
 
     FileMetadataDTO getFileMetadata(Path path) throws IOException {
         var attrs = Files.readAttributes(path, BasicFileAttributes.class);
@@ -112,16 +115,13 @@ public class FileService {
         return (currentUsage + newFileSize) > userService.getUserStorageLimit();
     }
 
-    boolean isStorageLimitExceeded() {
-        return isStorageLimitExceeded(0);
-    }
-
-    public long updateUserStorage() throws IOException {
+    public void updateUserStorage() throws IOException {
         var userId = authService.getUserId();
-        var user = userRepository.findById(Long.parseLong(userId)).get();
+        var user = userRepository.findById(Long.parseLong(userId)).orElseThrow();
+
         long currentUsage = bytesInside(getUserPath());
         user.setUsedStorage(currentUsage);
-        return userRepository.save(user).getUsedStorage();
+        userRepository.save(user);
     }
 
     // Endpoint services

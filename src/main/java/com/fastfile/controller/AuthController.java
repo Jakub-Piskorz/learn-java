@@ -7,7 +7,6 @@ import com.fastfile.model.UserLogin;
 import com.fastfile.model.User;
 import com.fastfile.service.AuthService;
 import com.fastfile.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,11 +15,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final AuthService authService;
 
-    @Autowired
-    private AuthService authService;
+    public AuthController(UserService userService, AuthService authService) {
+        this.userService = userService;
+        this.authService = authService;
+    }
 
     @PostMapping("/register")
     public User register(@RequestBody User user) {
@@ -29,7 +30,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public String login(@RequestBody UserLogin user) {
-        return authService.authenticate(user.getLogin(), user.getPassword());
+        return authService.authenticate(user.login(), user.password());
     }
     @GetMapping("/user")
     public UserDTO getCurrentUser() {

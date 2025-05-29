@@ -4,7 +4,6 @@ import com.fastfile.model.User;
 import com.fastfile.repository.UserRepository;
 import com.fastfile.auth.JwtService;
 import io.jsonwebtoken.Claims;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,14 +14,15 @@ import java.util.Optional;
 @Service
 public class AuthService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final JwtService jwtService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    public AuthService(UserRepository userRepository, JwtService jwtService, BCryptPasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.jwtService = jwtService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public String authenticate(String username, String password) throws RuntimeException {
         // Find the user by username

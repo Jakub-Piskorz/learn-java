@@ -2,7 +2,6 @@ package com.fastfile.service;
 
 import com.fastfile.model.User;
 import com.fastfile.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,12 +11,15 @@ import java.util.regex.Pattern;
 
 @Service
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private AuthService authService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthService authService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authService = authService;
+    }
 
     @Value("${storage.limits.free}")
     private long freeLimit;
@@ -31,8 +33,7 @@ public class UserService {
 
     public User getCurrentUser() {
         var userId = authService.getUserId();
-
-        return userRepository.findById(Long.parseLong(userId)).get();
+        return userRepository.findById(Long.parseLong(userId)).orElse(null);
     }
 
     public long getUserStorageLimit() {
@@ -55,8 +56,11 @@ public class UserService {
 
     public long getUserStorage() {
         var userId = authService.getUserId();
-        var user = userRepository.findById(Long.parseLong(userId)).get();
+        var user = userRepository.findById(Long.parseLong(userId)).orElse(null);
 
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
         return user.getUsedStorage();
     }
 

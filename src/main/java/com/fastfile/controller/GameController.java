@@ -2,14 +2,12 @@ package com.fastfile.controller;
 
 import com.fastfile.model.Game;
 import com.fastfile.repository.GameRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/games")
 public class GameController {
 
-    @Autowired
     private final GameRepository gameRepository;
 
     public GameController(GameRepository gameRepository) {
@@ -32,7 +30,7 @@ public class GameController {
     }
 
     @PutMapping("/{slug}")
-    public Game updateGame(@PathVariable String slug, @RequestBody Game updatedGame) throws Exception {
+    public Game updateGame(@PathVariable String slug, @RequestBody Game updatedGame) {
         Game chosenGame = gameRepository.findBySlug(slug);
         if (chosenGame == null) return null;
         if (updatedGame.getName() != null) {
@@ -48,9 +46,13 @@ public class GameController {
     }
 
     @DeleteMapping("/{slug}")
-    public void removeGame(@PathVariable String slug) throws Exception {
+    public void removeGame(@PathVariable String slug) {
         Game chosenGame = gameRepository.findBySlug(slug);
-        gameRepository.delete(chosenGame);
+        if (chosenGame != null) {
+            gameRepository.delete(chosenGame);
+        } else {
+            System.out.println("No such game");
+        }
     }
 //
 }

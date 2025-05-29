@@ -6,7 +6,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -17,10 +16,14 @@ import java.util.Map;
 @Service
 public class JwtService {
 
-    @Autowired
-    private GlobalVariables env;
+    private final GlobalVariables env;
+
+    public JwtService(GlobalVariables env) {
+        this.env = env;
+    }
 
     protected SecretKey secretKey;
+
 
     @PostConstruct
     public void init() {

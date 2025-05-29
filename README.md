@@ -33,23 +33,23 @@ FastFile is a Spring Boot-based cloud file storage backend that supports file up
 
 ### 🔐 Auth
 
-| Method | Endpoint                   | Description                         |
-|--------|----------------------------|-------------------------------------|
-| POST   | `/auth/register`           | Register a new user                 |
-| POST   | `/auth/login`              | Authenticate and receive JWT        |
-| GET    | `/auth/user`               | Get current user by token           |
-| POST   | `/auth/user/set-user-type` | Set user type to "free" or "premium"|
+| Method | Endpoint                   | Description                          |
+|--------|----------------------------|--------------------------------------|
+| POST   | `/auth/register`           | Register a new user                  |
+| POST   | `/auth/login`              | Authenticate and receive JWT         |
+| GET    | `/auth/user`               | Get current user by token            |
+| POST   | `/auth/user/set-user-type` | Set user type to "free" or "premium" |
 
 ### 📁 File Operations
 
-| Method | Endpoint                            | Description                    |
-|--------|-------------------------------------|--------------------------------|
-| GET    | `/api/v1/files/list/**`             | List files in a directory      |
-| GET    | `/api/v1/files/search/**`           | Search files by name           |
-| GET    | `/api/v1/files/download/**`         | Download a file                |
-| POST   | `/api/v1/files/upload`              | Upload a file (multipart)      |
-| DELETE | `/api/v1/files/delete/**`           | Delete a file                  |
-| POST   | `/api/v1/files/create-directory/**` | Create a new directory   |
+| Method | Endpoint                              | Description                    |
+|--------|---------------------------------------|--------------------------------|
+| GET    | `/api/v1/files/list/**`               | List files in a directory      |
+| GET    | `/api/v1/files/search/**`             | Search files by name           |
+| GET    | `/api/v1/files/download/**`           | Download a file                |
+| POST   | `/api/v1/files/upload`                | Upload a file (multipart)      |
+| DELETE | `/api/v1/files/delete/**`             | Delete a file                  |
+| POST   | `/api/v1/files/create-directory/**`   | Create a new directory         |
 | DELETE | `/api/v1/files/delete-recursively/**` | Delete a directory recursively |
 
 ---
