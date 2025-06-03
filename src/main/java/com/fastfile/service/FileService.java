@@ -2,6 +2,10 @@ package com.fastfile.service;
 
 import com.fastfile.dto.FileMetadataDTO;
 import com.fastfile.dto.SearchFileDTO;
+import com.fastfile.model.SharedFile;
+import com.fastfile.model.SharedFileKey;
+import com.fastfile.model.User;
+import com.fastfile.repository.SharedFileRepository;
 import com.fastfile.repository.UserRepository;
 import lombok.SneakyThrows;
 import org.springframework.core.io.InputStreamResource;
@@ -33,11 +37,13 @@ public class FileService {
     private final AuthService authService;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final SharedFileRepository sharedFileRepository;
 
-    public FileService(AuthService authService, UserService userService, UserRepository userRepository) {
+    public FileService(AuthService authService, UserService userService, UserRepository userRepository, SharedFileRepository sharedFileRepository) {
         this.authService = authService;
         this.userService = userService;
         this.userRepository = userRepository;
+        this.sharedFileRepository = sharedFileRepository;
     }
 
     FileMetadataDTO getFileMetadata(Path path) throws IOException {
@@ -76,7 +82,7 @@ public class FileService {
         };
     }
 
-    Path getUserPath(String directory) {
+    Path getMyUserPath(String directory) {
         if (directory == null) directory = "";
 
         // 🔒 Safety check against unsafe paths.
@@ -91,12 +97,12 @@ public class FileService {
             }
         }
 
-        String userId = authService.getUserId();
+        String userId = authService.getMyUserId();
         return Paths.get(FILES_ROOT + userId + "/" + directory);
     }
 
-    Path getUserPath() {
-        return getUserPath(null);
+    Path getMyUserPath() {
+        return getMyUserPath(null);
     }
 
     long bytesInside(Path path) throws IOException {
@@ -110,18 +116,16 @@ public class FileService {
         }
     }
 
-    boolean isStorageLimitExceeded(long newFileSize) {
-        long currentUsage = userService.getUserStorage();
-        return (currentUsage + newFileSize) > userService.getUserStorageLimit();
+    boolean isMyStorageLimitExceeded(long newFileSize) {
+        long currentUsage = userService.getMyUserStorage();
+        return (currentUsage + newFileSize) > userService.getMyUserStorageLimit();
     }
 
-    public void updateUserStorage() throws IOException {
-        var userId = authService.getUserId();
-        var user = userRepository.findById(Long.parseLong(userId)).orElseThrow();
-
-        long currentUsage = bytesInside(getUserPath());
-        user.setUsedStorage(currentUsage);
-        userRepository.save(user);
+    public void updateMyUserStorage() throws IOException {
+        long myCurrentUsage = bytesInside(getMyUserPath());
+        User me = userService.getMe();
+        me.setUsedStorage(myCurrentUsage);
+        userRepository.save(me);
     }
 
     // Endpoint services
@@ -133,7 +137,7 @@ public class FileService {
             return false;
         }
 
-        if (isStorageLimitExceeded(file.getSize())) {
+        if (isMyStorageLimitExceeded(file.getSize())) {
             System.out.println("Storage limit exceeded.");
             return false;
         }
@@ -142,8 +146,8 @@ public class FileService {
             filePath = "";
         }
 
-        Path path = getUserPath(filePath).normalize();
-        Path pathWithFile = getUserPath(filePath).resolve(Objects.requireNonNull(file.getOriginalFilename()));
+        Path path = getMyUserPath(filePath).normalize();
+        Path pathWithFile = getMyUserPath(filePath).resolve(Objects.requireNonNull(file.getOriginalFilename()));
 
         // Check if path exists
         if (!Files.exists(path)) {
@@ -155,12 +159,12 @@ public class FileService {
         }
         Files.copy(file.getInputStream(), pathWithFile);
 
-        updateUserStorage();
+        updateMyUserStorage();
         return true;
     }
 
     public Set<FileMetadataDTO> filesInDirectory(String directory, int maxDepth) throws IOException {
-        Path path = getUserPath(directory);
+        Path path = getMyUserPath(directory);
 
         Stream<Path> walkStream = Files.walk(path, maxDepth).skip(1);
         Set<FileMetadataDTO> filesMetadata = getFilesMetadata(walkStream);
@@ -173,7 +177,7 @@ public class FileService {
     }
 
     public ResponseEntity<InputStreamResource> downloadFile(String directory) throws IOException {
-        Path filePath = getUserPath(directory);
+        Path filePath = getMyUserPath(directory);
 
         if (!Files.exists(filePath)) {
             return ResponseEntity.notFound().build();
@@ -203,9 +207,9 @@ public class FileService {
     }
 
     public void delete(String filePath) throws IOException, NullPointerException {
-        Path path = getUserPath(filePath).normalize();
+        Path path = getMyUserPath(filePath).normalize();
         Files.delete(path);
-        updateUserStorage();
+        updateMyUserStorage();
     }
 
     public Iterable<FileMetadataDTO> searchFiles(SearchFileDTO searchFile) throws IOException {
@@ -213,7 +217,7 @@ public class FileService {
             throw new IllegalArgumentException("File name is empty");
         }
         if (searchFile.getDirectory() == null) searchFile.setDirectory("");
-        Stream<Path> walkStream = Files.walk(getUserPath(searchFile.getDirectory()));
+        Stream<Path> walkStream = Files.walk(getMyUserPath(searchFile.getDirectory()));
         // Skip(1), because it starts the list with itself (directory)
         Stream<Path> filteredWalkStream = walkStream.skip(1).filter(f -> f.getFileName().toString().contains(searchFile.getFileName()));
         var filesMetadata = getFilesMetadata(filteredWalkStream);
@@ -222,8 +226,8 @@ public class FileService {
     }
 
     public boolean createDirectory(String path) throws IOException {
-        if (path != null && !Files.exists(getUserPath(path))) {
-            Files.createDirectories(getUserPath(path));
+        if (path != null && !Files.exists(getMyUserPath(path))) {
+            Files.createDirectories(getMyUserPath(path));
             return true;
         } else {
             return false;
@@ -233,8 +237,8 @@ public class FileService {
 
     @SneakyThrows
     public boolean deleteRecursively(String directory) {
-        Path baseDir = getUserPath().toAbsolutePath();
-        Path path = getUserPath(directory);
+        Path baseDir = getMyUserPath().toAbsolutePath();
+        Path path = getMyUserPath(directory);
         if (path.toAbsolutePath().equals(baseDir)) {
             return false;
         }
@@ -249,7 +253,28 @@ public class FileService {
             });
         }
 
-        updateUserStorage();
+        updateMyUserStorage();
         return true;
+    }
+
+    public SharedFile shareFile(String path, Long targetUserId) {
+        User me = userService.getMe();
+        User targetUser = userRepository.findById(targetUserId).orElseThrow();
+
+        SharedFileKey compositeId = new SharedFileKey();
+        compositeId.setOwnerId(me.getId());
+        compositeId.setSharedUserId(targetUserId);
+        compositeId.setPath(path);
+
+        if (sharedFileRepository.existsById(compositeId)) {
+            throw new RuntimeException("File is already shared with this user.");
+        }
+
+        SharedFile sharedFile = new SharedFile();
+        sharedFile.setId(compositeId);
+        sharedFile.setSharedUser(targetUser);
+        sharedFile.setOwner(me);
+        sharedFileRepository.save(sharedFile);
+        return sharedFile;
     }
 }

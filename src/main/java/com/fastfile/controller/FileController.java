@@ -2,6 +2,8 @@ package com.fastfile.controller;
 
 import com.fastfile.dto.FileMetadataDTO;
 import com.fastfile.dto.SearchFileDTO;
+import com.fastfile.dto.ShareFileDTO;
+import com.fastfile.model.SharedFile;
 import com.fastfile.service.FileService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.io.InputStreamResource;
@@ -88,6 +90,16 @@ public class FileController {
             return new ResponseEntity<>("Successfully created directory.", HttpStatus.OK);
         } else {
             return new ResponseEntity<>("Couldn't create directory.", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PostMapping("/share")
+    public ResponseEntity<SharedFile> shareFile(@RequestBody ShareFileDTO shareFileDTO) throws Exception {
+        SharedFile sharedFile = fileService.shareFile(shareFileDTO.path(), shareFileDTO.targetUserId());
+        if (sharedFile != null) {
+            return new ResponseEntity<>(sharedFile, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         }
     }
 }

@@ -34,13 +34,13 @@ public class AuthController {
     }
     @GetMapping("/user")
     public UserDTO getCurrentUser() {
-        var user = userService.getCurrentUser();
+        var user = userService.getMe();
         return new UserDTO(user);
     }
 
     @PostMapping("/user/set-user-type")
     public ResponseEntity<String> setUserType(@RequestBody UserTypeDTO userType) {
-        boolean succeeded = userService.updateUserType(userType.userType());
+        boolean succeeded = userService.UpdateMyUserType(userType.userType());
         if (succeeded) {
             return new ResponseEntity<>("Successfully updated user to: " + userType.userType(), HttpStatus.OK);
         } else {

@@ -31,36 +31,36 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User getCurrentUser() {
-        var userId = authService.getUserId();
-        return userRepository.findById(Long.parseLong(userId)).orElse(null);
+    public User getMe() {
+        var myUserId = authService.getMyUserId();
+        return userRepository.findById(Long.parseLong(myUserId)).orElse(null);
     }
 
-    public long getUserStorageLimit() {
-        User user = getCurrentUser();
-        boolean isUserPremium = Objects.equals(user.getUserType(), "premium");
+    public long getMyUserStorageLimit() {
+        User me = getMe();
+        boolean isUserPremium = Objects.equals(me.getUserType(), "premium");
 
         return isUserPremium ? premiumLimit : freeLimit;
     }
 
-    public boolean updateUserType(String newUserType) {
+    public boolean UpdateMyUserType(String newUserType) {
         if (!Pattern.matches("^(free|premium)$", newUserType)) {
             return false;
         }
-        User user = getCurrentUser();
-        user.setUserType(newUserType);
-        userRepository.save(user);
+        User me = getMe();
+        me.setUserType(newUserType);
+        userRepository.save(me);
 
         return true;
     }
 
-    public long getUserStorage() {
-        User user = getCurrentUser();
+    public long getMyUserStorage() {
+        User me = getMe();
 
-        if (user == null) {
+        if (me == null) {
             throw new RuntimeException("User not found");
         }
-        return user.getUsedStorage();
+        return me.getUsedStorage();
     }
 
 }
