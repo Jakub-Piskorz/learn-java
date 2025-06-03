@@ -3,12 +3,15 @@ package com.fastfile.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Set;
+
 @Data
 @Entity
 @Getter
 @Setter
 @Table(name="_user")
 @RequiredArgsConstructor
+@NoArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +40,9 @@ public class User {
     private String userType = "free";
     private Long usedStorage = 0L;
 
-    // No-arguments constructor for Hibernate
-    public User() {
-    }
+    @OneToMany(mappedBy = "owner")
+    private Set<SharedFile> filesSharedWithOthers;
+
+    @OneToMany(mappedBy = "sharedUser")
+    private Set<SharedFile> filesSharedWithMe;
 }
